@@ -142,6 +142,37 @@ export const getVotesByQuestion = async (questionId) => {
   }
 };
 
+export const getUserVotes = async (userId) => {
+  try {
+    const q = query(collection(db, "votes"), where("userId", "==", userId));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+  } catch (error) {
+    console.error("Error getting user votes:", error);
+    throw error;
+  }
+};
+
+export const getUnansweredQuestions = async (userId, categoryId) => {
+  try {
+    // Получить все голоса пользователя
+    const userVotes = await getUserVotes(userId);
+    const votedQuestionIds = new Set(userVotes.map((v) => v.questionId));
+
+    // Получить все вопросы в категории
+    const categoryQuestions = await getQuestionsByCategory(categoryId);
+
+    // Фильтруем - только неотвеченные
+    return categoryQuestions.filter((q) => !votedQuestionIds.has(q.id));
+  } catch (error) {
+    console.error("Error getting unanswered questions:", error);
+    throw error;
+  }
+};
+
 // ===== USERS =====
 export const addUser = async (userId) => {
   try {
@@ -192,7 +223,6 @@ export const getCategories = async () => {
   try {
     const querySnapshot = await getDocs(collection(db, "categories"));
     if (querySnapshot.empty) {
-      // Если нет категорий в БД, возвращаем дефолтные
       return DEFAULT_CATEGORIES;
     }
     return querySnapshot.docs.map((doc) => ({

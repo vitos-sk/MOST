@@ -10,23 +10,6 @@ export const Container = styled.div`
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
 `;
 
-export const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-
-  @media (max-width: 640px) {
-    flex-direction: column;
-    gap: 15px;
-    text-align: center;
-  }
-`;
-
 export const Title = styled.h1`
   margin: 0;
   color: #333;

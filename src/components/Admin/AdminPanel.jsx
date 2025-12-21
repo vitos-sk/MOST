@@ -10,8 +10,6 @@ import {
 } from "../../services/firestoreService";
 import {
   Container,
-  Header,
-  Title,
   TabContainer,
   TabButtons,
   TabButton,
@@ -182,13 +180,6 @@ export default function AdminPanel() {
   // ===== РЕНДЕР =====
   return (
     <Container>
-      <Header>
-        <Title>🎯 Admin Panel - MOST</Title>
-        <div style={{ fontSize: "14px", color: "#666" }}>
-          {loading && "⏳ Загрузка..."}
-        </div>
-      </Header>
-
       <TabContainer>
         <TabButtons>
           <TabButton
