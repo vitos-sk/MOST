@@ -1,6 +1,8 @@
-// Telegram Mini App Service
-// Работает с Telegram WebApp API для автоматической авторизации
-
+/**
+ * Инициализирует Telegram WebApp
+ * Вызывает метод ready() для уведомления Telegram о готовности приложения
+ * @returns {Object|null} Экземпляр Telegram.WebApp или null, если недоступен
+ */
 export const initTelegramApp = () => {
   if (typeof window !== "undefined" && window.Telegram?.WebApp) {
     const tg = window.Telegram.WebApp;
@@ -10,10 +12,13 @@ export const initTelegramApp = () => {
   return null;
 };
 
+/**
+ * Получает данные пользователя из Telegram WebApp
+ * @returns {Object|null} Объект с данными пользователя (id, firstName, lastName, username, languageCode, isPremium, photoUrl, initData) или null
+ */
 export const getTelegramUser = () => {
   try {
     if (typeof window === "undefined" || !window.Telegram?.WebApp) {
-      console.warn("Telegram WebApp не доступен");
       return null;
     }
 
@@ -22,7 +27,6 @@ export const getTelegramUser = () => {
     const user = tg.initDataUnsafe?.user;
 
     if (!user) {
-      console.warn("Данные пользователя Telegram не найдены");
       return null;
     }
 
@@ -37,21 +41,31 @@ export const getTelegramUser = () => {
       initData,
     };
   } catch (error) {
-    console.error("Ошибка получения данных пользователя Telegram:", error);
     return null;
   }
 };
 
+/**
+ * Получает только ID пользователя Telegram
+ * @returns {string|null} ID пользователя или null, если недоступен
+ */
 export const getTelegramUserId = () => {
   const user = getTelegramUser();
   return user?.id || null;
 };
 
+/**
+ * Проверяет, доступен ли Telegram WebApp
+ * @returns {boolean} true, если Telegram WebApp доступен, иначе false
+ */
 export const isTelegramAvailable = () => {
   return typeof window !== "undefined" && !!window.Telegram?.WebApp;
 };
 
-// Mock User для разработки (когда не в Telegram)
+/**
+ * Создает mock-пользователя для разработки (когда приложение запущено вне Telegram)
+ * @returns {Object} Объект mock-пользователя с полем isMock: true
+ */
 export const getMockUser = () => {
   return {
     id: "mock-user-" + Math.random().toString(36).substr(2, 9),
@@ -66,7 +80,11 @@ export const getMockUser = () => {
   };
 };
 
-// Получить пользователя (реальный или mock)
+/**
+ * Получает пользователя (реального из Telegram или mock для разработки)
+ * Приоритет: реальный пользователь Telegram > mock пользователь
+ * @returns {Object} Объект пользователя (всегда возвращает значение)
+ */
 export const getUser = () => {
   // Сначала проверяем, доступен ли Telegram
   const telegramAvailable = isTelegramAvailable();
@@ -80,16 +98,22 @@ export const getUser = () => {
   }
 
   // Если Telegram недоступен или данные не получены - используем mock
-  console.log("ℹ️ Используется Mock User для разработки");
   return getMockUser();
 };
 
+/**
+ * Закрывает Telegram Mini App
+ */
 export const closeTelegramApp = () => {
   if (typeof window !== "undefined" && window.Telegram?.WebApp) {
     window.Telegram.WebApp.close();
   }
 };
 
+/**
+ * Показывает alert через Telegram API или нативный alert
+ * @param {string} message - Текст сообщения
+ */
 export const showTelegramAlert = (message) => {
   if (typeof window !== "undefined" && window.Telegram?.WebApp) {
     window.Telegram.WebApp.showAlert(message);
@@ -98,6 +122,11 @@ export const showTelegramAlert = (message) => {
   }
 };
 
+/**
+ * Показывает подтверждение через Telegram API или нативный confirm
+ * @param {string} message - Текст сообщения для подтверждения
+ * @returns {Promise<boolean>} Promise, который разрешается с true/false в зависимости от выбора пользователя
+ */
 export const showTelegramConfirm = (message) => {
   return new Promise((resolve) => {
     if (typeof window !== "undefined" && window.Telegram?.WebApp) {

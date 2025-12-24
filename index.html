@@ -4,9 +4,28 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Majority - Telegram Mini App</title>
-    <!-- Telegram WebApp API -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>MOST - Telegram Mini App</title>
+    <!-- Telegram WebApp API загружается динамически только в Telegram контексте -->
+    <script>
+      // Загружаем Telegram WebApp API только если мы в Telegram
+      (function () {
+        // Проверяем, запущено ли приложение в Telegram WebView
+        const isTelegramWebView =
+          window.navigator.userAgent.includes("Telegram") ||
+          window.location.search.includes("tgWebApp") ||
+          document.referrer.includes("telegram.org");
+
+        if (isTelegramWebView) {
+          const script = document.createElement("script");
+          script.src = "https://telegram.org/js/telegram-web-app.js";
+          script.async = true;
+          script.onerror = function () {
+            // Telegram WebApp API не загружен
+          };
+          document.head.appendChild(script);
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

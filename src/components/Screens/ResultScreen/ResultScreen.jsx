@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import {
-  getQuestions,
-  getVotesByQuestion,
-  getQuestionsByCategory,
-} from "../../../services/firestoreService";
+import { getQuestionsByCategory, getQuestions, getVotesByQuestion } from "../../../API";
+import { theme, cardGlass } from "../../../theme/theme";
+import { useAuth } from "../../../context/AuthContext";
 
-export default function ResultScreen() {
+export function ResultScreen() {
   const { questionId, categoryId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [question, setQuestion] = useState(null);
   const [nextQuestion, setNextQuestion] = useState(null);
   const [votes, setVotes] = useState(null);
+  const [userChoice, setUserChoice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -39,6 +39,14 @@ export default function ResultScreen() {
       const voteData = await getVotesByQuestion(questionId);
       setVotes(voteData);
 
+      // Найти выбор текущего пользователя
+      if (user?.id) {
+        const userVote = voteData.find((vote) => vote.userId === user.id);
+        if (userVote) {
+          setUserChoice(userVote.choice); // 'A' или 'B'
+        }
+      }
+
       // Получить следующий вопрос из этой же категории
       if (categoryId) {
         const categoryQuestions = await getQuestionsByCategory(categoryId);
@@ -49,7 +57,6 @@ export default function ResultScreen() {
         }
       }
     } catch (err) {
-      console.error("Error loading result data:", err);
       setError("Ошибка загрузки результатов");
     }
     setLoading(false);
@@ -73,7 +80,7 @@ export default function ResultScreen() {
   if (loading) {
     return (
       <Container>
-        <LoadingText>⏳ Загрузка результатов...</LoadingText>
+        <LoadingText>Загрузка результатов...</LoadingText>
       </Container>
     );
   }
@@ -84,9 +91,12 @@ export default function ResultScreen() {
         <ResultBox>
           <ErrorText>{error || "Ошибка загрузки"}</ErrorText>
         </ResultBox>
-        <div style={{ textAlign: "center" }}>
-          <BackButton onClick={() => navigate("/")}>← Назад к категориям</BackButton>
-        </div>
+        <ButtonWrapper>
+          <BackButton onClick={() => navigate("/")}>Назад к категориям</BackButton>
+        </ButtonWrapper>
+        <FixedBackButton onClick={() => navigate(-1)} aria-label="Назад">
+          <BackIcon>‹</BackIcon>
+        </FixedBackButton>
       </Container>
     );
   }
@@ -98,110 +108,146 @@ export default function ResultScreen() {
 
   const isMajorityA = percentageA >= 50;
 
+  // Определяем, какое объяснение показывать пользователю
+  // Объяснение должно показывать причину выбора варианта большинством,
+  // независимо от выбора пользователя
+  const getExplanationForUser = () => {
+    if (isMajorityA) {
+      // Большинство выбрало вариант A
+      return {
+        title: "Почему большинство выбирает первый вариант?",
+        text: question.majorityReason,
+      };
+    } else {
+      // Большинство выбрало вариант B
+      return {
+        title: "Почему большинство выбирает второй вариант?",
+        text: question.minorityReason,
+      };
+    }
+  };
+
+  const explanation = getExplanationForUser();
+
   return (
     <Container>
       <ResultBox>
-        <Title>📊 Результаты голосования</Title>
+        <Title>Результаты голосования</Title>
 
-        <VoteResult>
+        <StatisticsBlock>
           <OptionLabel>
-            <OptionName>🔴 {question.optionA}</OptionName>
-            <PercentText>{percentageA}%</PercentText>
+            <OptionName>Вариант A: {question.optionA}</OptionName>
+            <PercentageLabel>{percentageA}%</PercentageLabel>
           </OptionLabel>
           <ProgressBar>
-            <ProgressFill $isA={true} style={{ width: `${percentageA}%` }}>
-              {percentageA > 10 && `${percentageA}%`}
+            <ProgressFill $isA={true} $width={percentageA}>
+              {percentageA > 15 && `${percentageA}%`}
             </ProgressFill>
           </ProgressBar>
           <VoteCount>{question.votesOptionA || 0} голосов</VoteCount>
-        </VoteResult>
+        </StatisticsBlock>
 
-        <VoteResult>
+        <StatisticsBlock>
           <OptionLabel>
-            <OptionName>🔵 {question.optionB}</OptionName>
-            <PercentText>{percentageB}%</PercentText>
+            <OptionName>Вариант B: {question.optionB}</OptionName>
+            <PercentageLabel>{percentageB}%</PercentageLabel>
           </OptionLabel>
           <ProgressBar>
-            <ProgressFill $isA={false} style={{ width: `${percentageB}%` }}>
-              {percentageB > 10 && `${percentageB}%`}
+            <ProgressFill $isA={false} $width={percentageB}>
+              {percentageB > 15 && `${percentageB}%`}
             </ProgressFill>
           </ProgressBar>
           <VoteCount>{question.votesOptionB || 0} голосов</VoteCount>
-        </VoteResult>
+        </StatisticsBlock>
 
-        <ExplanationSection>
-          <ExplanationTitle>
-            {isMajorityA
-              ? "✅ Почему большинство выбирает первый вариант?"
-              : "✅ Почему большинство выбирает второй вариант?"}
-          </ExplanationTitle>
-          <ExplanationText>
-            {isMajorityA ? question.majorityReason : question.minorityReason}
-          </ExplanationText>
-        </ExplanationSection>
-
-        <ExplanationSection>
-          <ExplanationTitle>
-            {!isMajorityA
-              ? "🤔 Почему часть людей выбирает первый вариант?"
-              : "🤔 Почему часть людей выбирает второй вариант?"}
-          </ExplanationTitle>
-          <ExplanationText>
-            {!isMajorityA ? question.majorityReason : question.minorityReason}
-          </ExplanationText>
-        </ExplanationSection>
+        <ExplanationBlock>
+          <ExplanationTitle>{explanation.title}</ExplanationTitle>
+          <ExplanationText>{explanation.text}</ExplanationText>
+        </ExplanationBlock>
 
         <ButtonGroup>
-          <BackButton onClick={() => navigate("/")}>← На главную</BackButton>
+          <BackButton onClick={() => navigate("/")}>На главную</BackButton>
           <ContinueButton onClick={handleNextQuestion}>
-            {nextQuestion ? "Следующий вопрос →" : "Вернуться к вопросам →"}
+            {nextQuestion ? "Следующий вопрос" : "Вернуться к вопросам"}
           </ContinueButton>
         </ButtonGroup>
       </ResultBox>
+      <FixedBackButton onClick={() => navigate(-1)} aria-label="Назад">
+        <BackIcon>‹</BackIcon>
+      </FixedBackButton>
     </Container>
   );
 }
 
 const Container = styled.div`
-  max-width: 900px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: ${theme.spacing.md};
   min-height: 100vh;
+  height: 100vh;
   display: flex;
-  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+  flex-direction: column;
+  font-family: ${theme.typography.fontFamily};
+  overflow-y: auto;
+
+  @media (max-width: ${theme.breakpoints.sm}) {
+    padding: ${theme.spacing.sm};
+    height: 100dvh;
+  }
 `;
 
-const ResultBox = styled.div`
-  background: white;
-  border-radius: 16px;
-  padding: 40px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  margin-bottom: 20px;
+export const ResultBox = styled.div`
+  ${cardGlass}
+  border-radius: ${theme.radius.lg};
+  padding: ${theme.spacing.lg} ${theme.spacing.md};
+  box-shadow: ${theme.shadow.lg};
+  margin-bottom: ${theme.spacing.lg};
+  animation: slideUp 0.3s ease-out;
+  width: 100%;
+  max-width: 600px;
+  margin: auto;
 
-  @media (max-width: 640px) {
-    padding: 20px;
+  @media (max-width: ${theme.breakpoints.sm}) {
+    padding: ${theme.spacing.md};
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (min-width: ${theme.breakpoints.sm}) {
+    padding: ${theme.spacing.xl} ${theme.spacing.lg};
   }
 `;
 
 const Title = styled.h2`
-  color: #333;
-  font-size: 24px;
-  margin: 0 0 30px 0;
+  color: ${theme.colors.text.primary};
+  font-size: ${theme.typography.sizes.xl};
+  margin: 0 0 ${theme.spacing.xl} 0;
   text-align: center;
+  font-weight: ${theme.typography.weights.bold};
 
-  @media (max-width: 640px) {
-    font-size: 20px;
+  @media (min-width: ${theme.breakpoints.sm}) {
+    font-size: ${theme.typography.sizes["2xl"]};
   }
 `;
 
-const VoteResult = styled.div`
-  margin-bottom: 30px;
+export const StatisticsBlock = styled.div`
+  margin-bottom: ${theme.spacing.xl};
 
   &:last-of-type {
-    margin-bottom: 30px;
+    margin-bottom: ${theme.spacing.xl};
   }
 `;
 
@@ -209,133 +255,288 @@ const OptionLabel = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
-  font-weight: 600;
-  color: #333;
+  margin-bottom: ${theme.spacing.md};
+  font-weight: ${theme.typography.weights.semibold};
+  color: ${theme.colors.text.primary};
 `;
 
 const OptionName = styled.span`
-  font-size: 16px;
+  font-size: ${theme.typography.sizes.base};
+  color: ${theme.colors.text.primary};
+
+  @media (min-width: ${theme.breakpoints.sm}) {
+    font-size: ${theme.typography.sizes.md};
+  }
 `;
 
-const PercentText = styled.span`
-  font-size: 14px;
-  color: #667eea;
-  font-weight: 700;
+export const PercentageLabel = styled.span`
+  font-size: ${theme.typography.sizes.md};
+  color: ${theme.colors.accent.primary};
+  font-weight: ${theme.typography.weights.bold};
+
+  @media (min-width: ${theme.breakpoints.sm}) {
+    font-size: ${theme.typography.sizes.lg};
+  }
 `;
 
-const ProgressBar = styled.div`
-  background: #e0e0e0;
-  height: 24px;
-  border-radius: 12px;
+export const ProgressBar = styled.div`
+  background: ${theme.colors.progress.bg};
+  height: 32px;
+  border-radius: ${theme.radius.full};
   overflow: hidden;
   position: relative;
+  border: 1px solid ${theme.colors.border.default};
+
+  @media (min-width: ${theme.breakpoints.sm}) {
+    height: 36px;
+  }
 `;
 
 const ProgressFill = styled.div`
   height: 100%;
-  background: ${(props) => (props.$isA ? "#ff6b6b" : "#4ecdc4")};
-  transition: width 0.5s ease;
+  width: ${(props) => props.$width}%;
+  background: ${(props) =>
+    props.$isA ? theme.colors.progress.optionA : theme.colors.progress.optionB};
+  transition: width ${theme.transition.slower} cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 600;
-  font-size: 12px;
+  justify-content: ${(props) => (props.$width > 15 ? "flex-end" : "center")};
+  padding: 0 ${theme.spacing.md};
+  color: ${theme.colors.text.primary};
+  font-weight: ${theme.typography.weights.bold};
+  font-size: ${theme.typography.sizes.sm};
+  position: relative;
+  overflow: hidden;
+  animation: fillProgress 0.5s ease-out;
+
+  @keyframes fillProgress {
+    from {
+      width: 0;
+    }
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.2) 50%,
+      transparent 100%
+    );
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(200%);
+    }
+  }
 `;
 
 const VoteCount = styled.div`
-  margin-top: 8px;
-  font-size: 13px;
-  color: #999;
+  margin-top: ${theme.spacing.sm};
+  font-size: ${theme.typography.sizes.sm};
+  color: ${theme.colors.text.tertiary};
+  font-weight: ${theme.typography.weights.medium};
 `;
 
-const ExplanationSection = styled.div`
-  background: #f9f9f9;
-  padding: 20px;
-  border-radius: 8px;
-  margin-top: 15px;
-  border-left: 4px solid #667eea;
+export const ExplanationBlock = styled.div`
+  ${cardGlass}
+  padding: ${theme.spacing.lg} ${theme.spacing.md};
+  border-radius: ${theme.radius.md};
+  margin-top: ${theme.spacing.md};
+  border-left: 4px solid ${theme.colors.accent.primary};
+  transition: all ${theme.transition.base};
 
   &:first-of-type {
-    margin-top: 30px;
+    margin-top: ${theme.spacing.xl};
+  }
+
+  &:hover {
+    background: ${theme.colors.bg.cardHover};
+    border-left-color: ${theme.colors.accent.secondary};
+    transform: translateX(4px);
+  }
+
+  @media (min-width: ${theme.breakpoints.sm}) {
+    padding: ${theme.spacing.xl} ${theme.spacing.lg};
   }
 `;
 
 const ExplanationTitle = styled.h4`
-  color: #333;
-  margin: 0 0 10px 0;
-  font-size: 14px;
-  font-weight: 700;
+  color: ${theme.colors.text.primary};
+  margin: 0 0 ${theme.spacing.md} 0;
+  font-size: ${theme.typography.sizes.base};
+  font-weight: ${theme.typography.weights.bold};
+  line-height: ${theme.typography.lineHeights.normal};
 `;
 
 const ExplanationText = styled.p`
-  color: #666;
+  color: ${theme.colors.text.secondary};
   margin: 0;
-  line-height: 1.6;
-  font-size: 14px;
+  line-height: ${theme.typography.lineHeights.relaxed};
+  font-size: ${theme.typography.sizes.base};
 `;
 
 const ButtonGroup = styled.div`
   display: flex;
-  gap: 10px;
-  margin-top: 30px;
-
-  @media (max-width: 640px) {
-    flex-direction: column;
-  }
+  gap: ${theme.spacing.sm};
+  margin-top: ${theme.spacing.xl};
+  justify-content: center;
+  flex-wrap: wrap;
 `;
 
 const Button = styled.button`
-  flex: 1;
-  padding: 14px 20px;
+  padding: ${theme.spacing.sm} ${theme.spacing.lg};
+  min-height: 36px;
   border: none;
-  border-radius: 8px;
+  border-radius: ${theme.radius.md};
   cursor: pointer;
-  font-weight: 600;
-  font-size: 16px;
-  transition: all 0.3s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  font-weight: ${theme.typography.weights.semibold};
+  font-size: ${theme.typography.sizes.base};
+  transition: all ${theme.transition.base};
+  font-family: ${theme.typography.fontFamily};
 
-  &:hover:not(:disabled) {
-    transform: translateY(-2px);
+  /* Для мобильных: активное состояние вместо hover */
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  @media (min-width: ${theme.breakpoints.sm}) {
+    min-height: auto;
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
   }
 
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+    transform: none;
   }
 `;
 
 const ContinueButton = styled(Button)`
-  background: #667eea;
-  color: white;
+  background: ${theme.colors.accent.gradient};
+  color: ${theme.colors.text.primary};
+  box-shadow: ${theme.shadow.glow};
 
   &:hover:not(:disabled) {
-    background: #5568d3;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    box-shadow: ${theme.shadow.glowStrong};
+    filter: brightness(1.1);
   }
 `;
 
 const BackButton = styled(Button)`
-  background: #6c757d;
-  color: white;
+  ${cardGlass}
+  color: ${theme.colors.text.primary};
+  border: 1px solid ${theme.colors.border.default};
 
   &:hover:not(:disabled) {
-    background: #5a6268;
+    background: ${theme.colors.bg.cardHover};
+    border-color: ${theme.colors.border.hover};
+    box-shadow: ${theme.shadow.md};
   }
 `;
 
 const LoadingText = styled.div`
-  color: white;
+  color: ${theme.colors.text.secondary};
   text-align: center;
-  font-size: 18px;
+  font-size: ${theme.typography.sizes.md};
+  padding: ${theme.spacing.xxl} ${theme.spacing.md};
 `;
 
 const ErrorText = styled.div`
-  color: #ff6b6b;
+  color: ${theme.colors.status.error};
   text-align: center;
-  font-size: 16px;
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
+  font-size: ${theme.typography.sizes.base};
+  ${cardGlass}
+  padding: ${theme.spacing.lg};
+  border-radius: ${theme.radius.md};
+  border-color: ${theme.colors.status.error};
+`;
+
+const ButtonWrapper = styled.div`
+  text-align: center;
+`;
+
+const FixedBackButton = styled.button`
+  ${cardGlass}
+  position: fixed;
+  bottom: ${theme.spacing.md};
+  left: ${theme.spacing.md};
+  width: 56px;
+  height: 56px;
+  border-radius: ${theme.radius.full};
+  border: 1px solid ${theme.colors.border.default};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: all ${theme.transition.base};
+  padding: 0;
+  background: ${theme.colors.bg.glass};
+  z-index: ${theme.zIndex.sticky};
+  box-shadow: ${theme.shadow.md};
+
+  /* Для мобильных: активное состояние вместо hover */
+  &:active {
+    transform: scale(0.95);
+    background: ${theme.colors.bg.cardHover};
+  }
+
+  @media (min-width: ${theme.breakpoints.sm}) {
+    width: 52px;
+    height: 52px;
+    bottom: ${theme.spacing.lg};
+    left: ${theme.spacing.lg};
+
+    &:hover {
+      background: ${theme.colors.bg.cardHover};
+      border-color: ${theme.colors.border.accent};
+      transform: translateX(-2px);
+      box-shadow: ${theme.shadow.lg};
+    }
+
+    &:active {
+      transform: translateX(-1px);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${theme.colors.accent.primary};
+    outline-offset: 2px;
+  }
+
+  @media (min-width: ${theme.breakpoints.sm}) {
+    width: 52px;
+    height: 52px;
+    bottom: ${theme.spacing.lg};
+    left: ${theme.spacing.lg};
+  }
+`;
+
+const BackIcon = styled.span`
+  font-size: ${theme.typography.sizes["2xl"]};
+  color: ${theme.colors.text.primary};
+  line-height: 1;
+  font-weight: ${theme.typography.weights.bold};
 `;
