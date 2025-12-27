@@ -1,27 +1,34 @@
 import styled from "styled-components";
 import { getCategoryName } from "../../../../API";
-import { Button } from "../../../UI-components";
+import { Button, CodeHighlight } from "../../../UI-components";
 import { theme, cardGlass } from "../../../../theme/theme";
 
 export function QuestionCard({ question, categories, onDelete, loading }) {
   const {
     id,
-    text,
+    code,
     optionA,
     optionB,
-    majorityReason,
-    minorityReason,
+    optionC,
     category,
     votesOptionA,
     votesOptionB,
+    votesOptionC,
   } = question;
 
   return (
     <ItemCard>
       <ItemHeader>
-        <ItemTitle>{text}</ItemTitle>
         <Badge>{getCategoryName(category, categories)}</Badge>
       </ItemHeader>
+
+      <CodeBlock>
+        <CodeLabel>
+          <CodeIcon>📝</CodeIcon>
+          Код
+        </CodeLabel>
+        <CodeHighlight code={code} language="javascript" />
+      </CodeBlock>
 
       <ContentBlock>
         <p>
@@ -30,16 +37,10 @@ export function QuestionCard({ question, categories, onDelete, loading }) {
         <p>
           <strong>Вариант B:</strong> {optionB} ({votesOptionB || 0} голосов)
         </p>
+        <p>
+          <strong>Вариант C:</strong> {optionC} ({votesOptionC || 0} голосов)
+        </p>
       </ContentBlock>
-
-      <ExplanationBlock>
-        <p>
-          <strong>Большинство:</strong> {majorityReason}
-        </p>
-        <p>
-          <strong>Меньшинство:</strong> {minorityReason}
-        </p>
-      </ExplanationBlock>
 
       <ButtonDelete onClick={() => onDelete(id)} disabled={loading}>
         Удалить
@@ -51,14 +52,14 @@ export function QuestionCard({ question, categories, onDelete, loading }) {
 const ItemCard = styled.div`
   ${cardGlass}
   border: 1px solid ${theme.colors.border.default};
-  border-radius: ${theme.radius.lg};
+  border-radius: 0;
   padding: ${theme.spacing.lg};
-  box-shadow: ${theme.shadow.md};
+  box-shadow: none;
   transition: all ${theme.transition.base};
   background: ${theme.colors.bg.card};
 
   &:hover {
-    box-shadow: ${theme.shadow.lg};
+    box-shadow: none;
     border-color: ${theme.colors.border.accent};
     transform: translateY(-2px);
   }
@@ -77,33 +78,59 @@ const ItemHeader = styled.div`
   gap: ${theme.spacing.sm};
 `;
 
-const ItemTitle = styled.h3`
-  margin: 0;
-  font-size: ${theme.typography.sizes.lg};
-  font-weight: ${theme.typography.weights.bold};
-  color: ${theme.colors.text.primary};
-  flex: 1;
-  line-height: ${theme.typography.lineHeights.normal};
+const CodeBlock = styled.div`
+  ${cardGlass}
+  border-radius: 0;
+  padding: ${theme.spacing.lg};
+  margin-bottom: ${theme.spacing.lg};
+  border: 2px solid ${theme.colors.border.default};
+  background: ${theme.colors.bg.card};
+  box-shadow: none;
+  position: relative;
+  overflow: hidden;
 
-  @media (min-width: ${theme.breakpoints.sm}) {
-    font-size: ${theme.typography.sizes.xl};
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: ${theme.colors.accent.primary};
+    opacity: 0.5;
   }
 `;
 
+const CodeLabel = styled.div`
+  color: ${theme.colors.text.primary};
+  font-size: ${theme.typography.sizes.sm};
+  font-weight: ${theme.typography.weights.bold};
+  margin-bottom: ${theme.spacing.md};
+  display: flex;
+  align-items: center;
+  gap: ${theme.spacing.xs};
+  letter-spacing: -0.01em;
+`;
+
+const CodeIcon = styled.span`
+  font-size: ${theme.typography.sizes.md};
+  filter: grayscale(0.2);
+`;
+
 const Badge = styled.span`
-  background: ${theme.colors.accent.gradient};
+  background: ${theme.colors.accent.primary};
   color: ${theme.colors.text.primary};
   padding: ${theme.spacing.xs} ${theme.spacing.md};
-  border-radius: ${theme.radius.full};
+  border-radius: 0;
   font-size: ${theme.typography.sizes.xs};
   font-weight: ${theme.typography.weights.semibold};
-  box-shadow: ${theme.shadow.sm};
+  box-shadow: none;
 `;
 
 const ContentBlock = styled.div`
   ${cardGlass}
   padding: ${theme.spacing.md} ${theme.spacing.lg};
-  border-radius: ${theme.radius.md};
+  border-radius: 0;
   margin-bottom: ${theme.spacing.md};
   border: 1px solid ${theme.colors.border.default};
   background: ${theme.colors.bg.glass};
@@ -115,27 +142,6 @@ const ContentBlock = styled.div`
 
     strong {
       font-weight: ${theme.typography.weights.semibold};
-      color: ${theme.colors.accent.primary};
-    }
-  }
-`;
-
-const ExplanationBlock = styled.div`
-  ${cardGlass}
-  padding: ${theme.spacing.md} ${theme.spacing.lg};
-  border-radius: ${theme.radius.md};
-  margin-bottom: ${theme.spacing.md};
-  border: 1px solid ${theme.colors.border.default};
-  background: ${theme.colors.accent.gradientSoft};
-
-  p {
-    margin: ${theme.spacing.sm} 0;
-    color: ${theme.colors.text.primary};
-    font-size: ${theme.typography.sizes.sm};
-    line-height: ${theme.typography.lineHeights.relaxed};
-
-    strong {
-      font-weight: ${theme.typography.weights.bold};
       color: ${theme.colors.accent.primary};
     }
   }

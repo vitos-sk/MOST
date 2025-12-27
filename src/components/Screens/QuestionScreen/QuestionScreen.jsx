@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getUnansweredQuestions, addVote, getQuestionsByCategory } from "../../../API";
 import { useAuth } from "../../../context/AuthContext";
-import { Button as UIButton } from "../../UI-components";
+import { Button as UIButton, CodeHighlight, BackButton } from "../../UI-components";
 import { theme, cardGlass } from "../../../theme/theme";
 import { useModal } from "../../../context/ModalContext";
 
@@ -19,6 +19,7 @@ export function QuestionScreen() {
   const [voting, setVoting] = useState(false);
   const [error, setError] = useState(null);
   const [isEmptyCategory, setIsEmptyCategory] = useState(false);
+  const [isRestartMode, setIsRestartMode] = useState(false);
 
   useEffect(() => {
     if (user?.id) {
@@ -102,6 +103,34 @@ export function QuestionScreen() {
     }
   };
 
+  const handleRestart = async () => {
+    if (!categoryId) return;
+
+    setLoading(true);
+    setError(null);
+    setIsEmptyCategory(false);
+    setIsRestartMode(true);
+
+    try {
+      // Загружаем все вопросы категории для повторного прохождения
+      const allCategoryQuestions = await getQuestionsByCategory(categoryId);
+
+      if (allCategoryQuestions.length === 0) {
+        setIsEmptyCategory(true);
+        setIsRestartMode(false);
+      } else {
+        setQuestions(allCategoryQuestions);
+        setCurrentQuestionIndex(0);
+        setSelectedOption(null);
+      }
+    } catch (err) {
+      setError("Ошибка загрузки вопросов");
+      setIsEmptyCategory(false);
+      setIsRestartMode(false);
+    }
+    setLoading(false);
+  };
+
   if (loading) {
     return (
       <Container>
@@ -118,12 +147,12 @@ export function QuestionScreen() {
             <ErrorText>{error}</ErrorText>
           </ErrorBox>
           <ButtonWrapper>
-            <BackButton onClick={() => navigate("/")}>Назад к категориям</BackButton>
+            <UIButton onClick={() => navigate("/")} variant="secondary">
+              Назад к категориям
+            </UIButton>
           </ButtonWrapper>
         </ErrorContainer>
-        <FixedBackButton onClick={() => navigate(-1)} aria-label="Назад">
-          <BackIcon>‹</BackIcon>
-        </FixedBackButton>
+        <BackButton onClick={() => navigate(-1)} />
       </Container>
     );
   }
@@ -133,21 +162,34 @@ export function QuestionScreen() {
       <Container>
         <SuccessContainer>
           <SuccessBox>
+            <SuccessTitle>
+              {isEmptyCategory ? "Категория пуста" : "Поздравляем!"}
+            </SuccessTitle>
             <SuccessText>
               {isEmptyCategory
                 ? "В этой категории пока нет вопросов"
                 : "Вы ответили на все вопросы в этой категории!"}
             </SuccessText>
+            {!isEmptyCategory && (
+              <ButtonWrapper>
+                <UIButton onClick={handleRestart} variant="primary">
+                  Начать заново
+                </UIButton>
+                <UIButton onClick={() => navigate("/")} variant="secondary">
+                  Выбрать другую категорию
+                </UIButton>
+              </ButtonWrapper>
+            )}
+            {isEmptyCategory && (
+              <ButtonWrapper>
+                <UIButton onClick={() => navigate("/")} variant="secondary">
+                  Выбрать другую категорию
+                </UIButton>
+              </ButtonWrapper>
+            )}
           </SuccessBox>
-          <ButtonWrapper>
-            <BackButton onClick={() => navigate("/")}>
-              Выбрать другую категорию
-            </BackButton>
-          </ButtonWrapper>
         </SuccessContainer>
-        <FixedBackButton onClick={() => navigate(-1)} aria-label="Назад">
-          <BackIcon>‹</BackIcon>
-        </FixedBackButton>
+        <BackButton onClick={() => navigate(-1)} />
       </Container>
     );
   }
@@ -162,7 +204,10 @@ export function QuestionScreen() {
           Вопрос {currentQuestionIndex + 1} из {totalQuestions}
         </QuestionCounter>
 
-        <QuestionTitle>{currentQuestion.text}</QuestionTitle>
+        <CodeBlock>
+          <CodeLabel>Код</CodeLabel>
+          <CodeHighlight code={currentQuestion.code} language="javascript" />
+        </CodeBlock>
 
         <AnswerList>
           <AnswerButton
@@ -174,7 +219,7 @@ export function QuestionScreen() {
               <OptionIcon>A</OptionIcon>
               <OptionText>{currentQuestion.optionA}</OptionText>
             </OptionContent>
-            <VoteCount>{currentQuestion.votesOptionA || 0} голосов</VoteCount>
+            <VoteCount>{currentQuestion.votesOptionA || 0}</VoteCount>
           </AnswerButton>
 
           <AnswerButton
@@ -186,7 +231,19 @@ export function QuestionScreen() {
               <OptionIcon>B</OptionIcon>
               <OptionText>{currentQuestion.optionB}</OptionText>
             </OptionContent>
-            <VoteCount>{currentQuestion.votesOptionB || 0} голосов</VoteCount>
+            <VoteCount>{currentQuestion.votesOptionB || 0}</VoteCount>
+          </AnswerButton>
+
+          <AnswerButton
+            $selected={selectedOption === "C"}
+            onClick={() => setSelectedOption("C")}
+            disabled={voting}
+          >
+            <OptionContent>
+              <OptionIcon>C</OptionIcon>
+              <OptionText>{currentQuestion.optionC}</OptionText>
+            </OptionContent>
+            <VoteCount>{currentQuestion.votesOptionC || 0}</VoteCount>
           </AnswerButton>
         </AnswerList>
 
@@ -210,16 +267,14 @@ export function QuestionScreen() {
           </SubmitButton>
         </ActionsContainer>
       </QuestionCard>
-      <FixedBackButton onClick={() => navigate(-1)} aria-label="Назад">
-        <BackIcon>‹</BackIcon>
-      </FixedBackButton>
+      <BackButton onClick={() => navigate(-1)} />
     </Container>
   );
 }
 
 const Container = styled.div`
   width: 100%;
-  padding: ${theme.spacing.md};
+  padding: ${theme.spacing.sm};
   max-width: 100%;
   margin: 0 auto;
   min-height: 100vh;
@@ -227,12 +282,8 @@ const Container = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow-y: auto;
-
-  @media (max-width: ${theme.breakpoints.sm}) {
-    padding: ${theme.spacing.sm};
-    height: 100dvh;
-  }
+  overflow: hidden;
+  background: ${theme.colors.bg.primary};
 `;
 
 const LoadingText = styled.div`
@@ -252,9 +303,8 @@ const ErrorContainer = styled.div`
 
 const ErrorBox = styled.div`
   ${cardGlass}
-  border-radius: ${theme.radius.lg};
+  border-radius: 0;
   padding: ${theme.spacing.xl} ${theme.spacing.lg};
-  box-shadow: ${theme.shadow.md};
   border-color: ${theme.colors.status.error};
 `;
 
@@ -267,59 +317,83 @@ const ErrorText = styled.div`
 
 const SuccessContainer = styled.div`
   width: 100%;
-  max-width: 600px;
+  max-width: 700px;
   display: flex;
   flex-direction: column;
-  gap: ${theme.spacing.lg};
+  align-items: center;
+  justify-content: center;
 `;
 
 const SuccessBox = styled.div`
   ${cardGlass}
-  border-radius: ${theme.radius.lg};
-  padding: ${theme.spacing.xl} ${theme.spacing.lg};
-  box-shadow: ${theme.shadow.md};
-  border-color: ${theme.colors.status.success};
+  border-radius: 0;
+  padding: ${theme.spacing.md};
+  border: none;
+  background: ${theme.colors.bg.card};
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${theme.spacing.md};
+  animation: slideUp 0.3s ease-out;
+  width: 100%;
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+`;
+
+const SuccessTitle = styled.div`
+  color: ${theme.colors.text.primary};
+  text-align: center;
+  font-size: ${theme.typography.sizes.xl};
+  font-weight: ${theme.typography.weights.bold};
+  letter-spacing: -0.02em;
+
+  @media (min-width: ${theme.breakpoints.sm}) {
+    font-size: ${theme.typography.sizes["2xl"]};
+  }
 `;
 
 const SuccessText = styled.div`
-  color: ${theme.colors.status.success};
+  color: ${theme.colors.text.secondary};
   text-align: center;
-  font-size: ${theme.typography.sizes.md};
-  font-weight: ${theme.typography.weights.semibold};
+  font-size: ${theme.typography.sizes.base};
+  font-weight: ${theme.typography.weights.medium};
+  line-height: ${theme.typography.lineHeights.relaxed};
+
+  @media (min-width: ${theme.breakpoints.sm}) {
+    font-size: ${theme.typography.sizes.lg};
+  }
 `;
 
 const ButtonWrapper = styled.div`
   display: flex;
+  gap: ${theme.spacing.xs};
+  flex-wrap: wrap;
   justify-content: center;
-`;
-
-const BackButton = styled(UIButton)`
-  background: ${theme.colors.bg.secondary};
-  color: ${theme.colors.text.primary};
-  border-color: ${theme.colors.border.default};
-
-  &:hover:not(:disabled) {
-    background: ${theme.colors.bg.cardHover};
-    border-color: ${theme.colors.border.hover};
-  }
+  width: 100%;
 `;
 
 export const QuestionCard = styled.div`
   ${cardGlass}
-  border-radius: ${theme.radius.lg};
-  padding: ${theme.spacing.lg} ${theme.spacing.md};
-  box-shadow: ${theme.shadow.lg};
+  border-radius: 0;
+  padding: ${theme.spacing.md};
   animation: slideUp 0.3s ease-out;
   transition: all ${theme.transition.base};
   width: 100%;
-  max-width: 600px;
-  margin: auto;
-
-  @media (max-width: ${theme.breakpoints.sm}) {
-    padding: ${theme.spacing.md};
-    max-height: calc(100vh - 32px);
-    overflow-y: auto;
-  }
+  max-width: 700px;
+  margin: 0 auto;
+  background: ${theme.colors.bg.card};
+  display: flex;
+  flex-direction: column;
 
   @keyframes slideUp {
     from {
@@ -332,53 +406,67 @@ export const QuestionCard = styled.div`
     }
   }
 
-  @media (min-width: ${theme.breakpoints.sm}) {
-    padding: ${theme.spacing.xl} ${theme.spacing.lg};
-  }
-
-  &:hover {
-    background: ${theme.colors.bg.cardHover};
-    border-color: ${theme.colors.border.hover};
+  @media (max-width: ${theme.breakpoints.sm}) {
+    padding: ${theme.spacing.md};
+    max-height: calc(100vh - 8px);
+    overflow-y: auto;
+    border-radius: 0;
   }
 `;
 
 const QuestionCounter = styled.div`
   text-align: center;
   color: ${theme.colors.text.tertiary};
-  font-size: ${theme.typography.sizes.sm};
-  margin-bottom: ${theme.spacing.lg};
+  font-size: ${theme.typography.sizes.xs};
+  margin-bottom: ${theme.spacing.sm};
   font-weight: ${theme.typography.weights.medium};
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  padding: ${theme.spacing.xs};
+  background: ${theme.colors.bg.secondary};
+  border-radius: 0;
+  display: block;
+  width: 100%;
 `;
 
-export const QuestionTitle = styled.h2`
-  color: ${theme.colors.text.primary};
-  font-size: ${theme.typography.sizes.xl};
-  text-align: center;
-  margin: 0 0 ${theme.spacing.xl} 0;
-  line-height: ${theme.typography.lineHeights.relaxed};
-  font-weight: ${theme.typography.weights.semibold};
+const CodeBlock = styled.div`
+  ${cardGlass}
+  border-radius: 0;
+  padding: ${theme.spacing.xs};
+  margin-bottom: ${theme.spacing.sm};
+  background: ${theme.colors.bg.secondary};
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 1;
+  min-height: 0;
+`;
 
-  @media (min-width: ${theme.breakpoints.sm}) {
-    font-size: ${theme.typography.sizes["2xl"]};
-  }
+const CodeLabel = styled.div`
+  color: ${theme.colors.text.secondary};
+  font-size: ${theme.typography.sizes.xs};
+  font-weight: ${theme.typography.weights.medium};
+  margin-bottom: ${theme.spacing.xs};
+  display: flex;
+  align-items: center;
+  gap: ${theme.spacing.xs};
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 `;
 
 export const AnswerList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${theme.spacing.md};
-  margin-bottom: ${theme.spacing.xl};
+  gap: ${theme.spacing.xs};
+  margin-bottom: ${theme.spacing.sm};
+  flex-shrink: 0;
 `;
 
 export const AnswerButton = styled.button`
   ${cardGlass}
-  border: 2px solid ${(props) =>
-    props.$selected ? theme.colors.border.accent : theme.colors.border.default};
-  border-radius: ${theme.radius.md};
-  padding: ${theme.spacing.xl} ${theme.spacing.md};
-  min-height: 80px;
+  border: none;
+  border-radius: 0;
+  padding: ${theme.spacing.xs} ${theme.spacing.sm};
+  min-height: 50px;
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
@@ -389,34 +477,23 @@ export const AnswerButton = styled.button`
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: ${theme.spacing.sm};
+  gap: ${theme.spacing.xs};
   position: relative;
   overflow: hidden;
-
-  @media (min-width: ${theme.breakpoints.sm}) {
-    padding: ${theme.spacing.lg} ${theme.spacing.md};
-    min-height: auto;
-  }
-
-  ${(props) =>
-    props.$selected &&
-    `
-    background: ${theme.colors.accent.gradientSoft};
-    border-color: ${theme.colors.border.accentHover};
-    box-shadow: ${theme.shadow.glow};
-  `}
+  background: ${(props) =>
+    props.$selected ? theme.colors.bg.secondary : theme.colors.bg.card};
 
   &::before {
     content: "";
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
-    background: ${theme.colors.accent.gradientSoft};
+    width: 3px;
+    height: 100%;
+    background: ${theme.colors.accent.primary};
     opacity: ${(props) => (props.$selected ? 1 : 0)};
     transition: opacity ${theme.transition.base};
-    z-index: 0;
+    z-index: 2;
   }
 
   > * {
@@ -426,21 +503,16 @@ export const AnswerButton = styled.button`
 
   /* Для мобильных: активное состояние вместо hover */
   &:active:not(:disabled) {
-    transform: scale(0.98);
-    border-color: ${theme.colors.border.accentHover};
+    background: ${theme.colors.bg.secondary};
   }
 
   @media (min-width: ${theme.breakpoints.sm}) {
     &:hover:not(:disabled) {
-      border-color: ${theme.colors.border.accentHover};
-      background: ${theme.colors.bg.cardHover};
-      transform: translateY(-2px);
-      box-shadow: ${theme.shadow.md};
+      background: ${theme.colors.bg.secondary};
     }
 
     &:active:not(:disabled) {
-      transform: translateY(0);
-      box-shadow: ${theme.shadow.sm};
+      background: ${theme.colors.bg.secondary};
     }
   }
 
@@ -460,103 +532,42 @@ const OptionContent = styled.div`
 `;
 
 const OptionIcon = styled.span`
-  font-size: ${theme.typography.sizes.lg};
+  font-size: ${theme.typography.sizes.sm};
   font-weight: ${theme.typography.weights.bold};
-  color: ${theme.colors.accent.primary};
-  width: 32px;
-  height: 32px;
+  color: ${theme.colors.text.primary};
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: ${theme.colors.accent.gradientSoft};
-  border-radius: ${theme.radius.md};
+  background: ${theme.colors.bg.secondary};
+  border: none;
+  border-radius: 0;
   flex-shrink: 0;
 `;
 
 const OptionText = styled.div`
-  font-size: ${theme.typography.sizes.md};
-  font-weight: ${theme.typography.weights.semibold};
+  font-size: ${theme.typography.sizes.sm};
+  font-weight: ${theme.typography.weights.medium};
   color: ${theme.colors.text.primary};
-  line-height: ${theme.typography.lineHeights.normal};
-
-  @media (min-width: ${theme.breakpoints.sm}) {
-    font-size: ${theme.typography.sizes.lg};
-  }
+  line-height: ${theme.typography.lineHeights.tight};
 `;
 
 const VoteCount = styled.div`
-  font-size: ${theme.typography.sizes.sm};
+  font-size: ${theme.typography.sizes.xs};
   color: ${theme.colors.text.tertiary};
-  font-weight: ${theme.typography.weights.medium};
+  font-weight: ${theme.typography.weights.normal};
   white-space: nowrap;
+  opacity: 0.6;
 `;
 
 const ActionsContainer = styled.div`
   display: flex;
-  gap: ${theme.spacing.sm};
+  gap: ${theme.spacing.xs};
   flex-wrap: wrap;
   justify-content: center;
+  margin-top: ${theme.spacing.md};
+  flex-shrink: 0;
 `;
 
-export const SubmitButton = styled(UIButton)`
-  /* Styles are handled by Button component with variant="primary" */
-`;
-
-const FixedBackButton = styled.button`
-  ${cardGlass}
-  position: fixed;
-  bottom: ${theme.spacing.md};
-  left: ${theme.spacing.md};
-  width: 56px;
-  height: 56px;
-  border-radius: ${theme.radius.full};
-  border: 1px solid ${theme.colors.border.default};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  transition: all ${theme.transition.base};
-  padding: 0;
-  background: ${theme.colors.bg.glass};
-  z-index: ${theme.zIndex.sticky};
-  box-shadow: ${theme.shadow.md};
-
-  /* Для мобильных: активное состояние вместо hover */
-  &:active {
-    transform: scale(0.95);
-    background: ${theme.colors.bg.cardHover};
-  }
-
-  @media (min-width: ${theme.breakpoints.sm}) {
-    width: 52px;
-    height: 52px;
-    bottom: ${theme.spacing.lg};
-    left: ${theme.spacing.lg};
-
-    &:hover {
-      background: ${theme.colors.bg.cardHover};
-      border-color: ${theme.colors.border.accent};
-      transform: translateX(-2px);
-      box-shadow: ${theme.shadow.lg};
-    }
-
-    &:active {
-      transform: translateX(-1px);
-    }
-  }
-
-  &:focus-visible {
-    outline: 2px solid ${theme.colors.accent.primary};
-    outline-offset: 2px;
-  }
-`;
-
-const BackIcon = styled.span`
-  font-size: ${theme.typography.sizes["2xl"]};
-  color: ${theme.colors.text.primary};
-  line-height: 1;
-  font-weight: ${theme.typography.weights.bold};
-`;
+export const SubmitButton = styled(UIButton)``;

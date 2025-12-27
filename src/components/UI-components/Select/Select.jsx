@@ -24,7 +24,7 @@ const StyledSelect = styled.select`
   background: ${theme.colors.bg.card};
   border: 1px solid
     ${(props) => (props.$error ? theme.colors.status.error : theme.colors.border.default)};
-  border-radius: ${theme.radius.md};
+  border-radius: 0;
   padding: ${theme.spacing.md};
   font-size: ${theme.typography.sizes.base};
   font-family: ${theme.typography.fontFamily};

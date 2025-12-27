@@ -128,7 +128,7 @@ const Overlay = styled.div`
 const ModalContainer = styled.div`
   ${cardGlass}
   background: ${theme.colors.bg.card};
-  border-radius: ${theme.radius.xl};
+  border-radius: 0;
   padding: ${theme.spacing.xl};
   max-width: 400px;
   width: 100%;
@@ -137,7 +137,7 @@ const ModalContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${theme.spacing.lg};
-  box-shadow: ${theme.shadow.lg};
+  box-shadow: none;
   animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 
   @keyframes slideUp {
@@ -154,7 +154,7 @@ const ModalContainer = styled.div`
   @media (max-width: ${theme.breakpoints.sm}) {
     max-width: 100%;
     padding: ${theme.spacing.lg};
-    border-radius: ${theme.radius.lg} ${theme.radius.lg} 0 0;
+    border-radius: 0;
     margin-top: auto;
     animation: slideUpMobile 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -179,7 +179,7 @@ const ModalHeader = styled.div`
 const ModalIcon = styled.div`
   width: 64px;
   height: 64px;
-  border-radius: ${theme.radius.full};
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;

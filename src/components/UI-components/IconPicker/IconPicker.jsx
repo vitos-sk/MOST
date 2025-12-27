@@ -529,7 +529,7 @@ const DragHandle = styled.div`
   width: 40px;
   height: 4px;
   background: ${theme.colors.border.default};
-  border-radius: ${theme.radius.full};
+  border-radius: 0;
   margin: ${theme.spacing.sm} auto;
   cursor: grab;
 
@@ -555,7 +555,7 @@ const PickerButton = styled.button`
   padding: ${theme.spacing.md} ${theme.spacing.lg};
   background: ${theme.colors.bg.card};
   border: 1px solid ${theme.colors.border.default};
-  border-radius: ${theme.radius.md};
+  border-radius: 0;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -630,8 +630,8 @@ const Dropdown = styled.div`
   backdrop-filter: blur(10px) saturate(120%);
   -webkit-backdrop-filter: blur(10px) saturate(120%);
   border: 1px solid ${theme.colors.border.default};
-  border-radius: ${theme.radius.lg};
-  box-shadow: ${theme.shadow.md};
+  border-radius: 0;
+  box-shadow: none;
   z-index: 99999;
   max-height: 500px;
   min-width: 400px;
@@ -653,7 +653,7 @@ const Dropdown = styled.div`
   }
 
   @media (min-width: ${theme.breakpoints.sm}) {
-    box-shadow: ${theme.shadow.lg};
+    box-shadow: none;
     width: 600px;
     min-width: 500px;
     max-width: 90vw;
@@ -669,9 +669,9 @@ const Dropdown = styled.div`
     max-width: 100% !important;
     min-width: auto !important;
     margin: 0;
-    border-radius: ${theme.radius.xl} ${theme.radius.xl} 0 0;
+    border-radius: 0;
     max-height: 85vh;
-    box-shadow: ${theme.shadow.lg};
+    box-shadow: none;
     z-index: 99999;
     animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -708,7 +708,7 @@ const SearchInput = styled.input`
   padding: ${theme.spacing.sm} ${theme.spacing.md};
   background: ${theme.colors.bg.card};
   border: 1px solid ${theme.colors.border.default};
-  border-radius: ${theme.radius.md};
+  border-radius: 0;
   font-size: ${theme.typography.sizes.md};
   color: ${theme.colors.text.primary};
   transition: all ${theme.transition.base};
@@ -766,7 +766,7 @@ const CategoryTab = styled.button`
   border: 1px solid
     ${(props) =>
       props.$active ? theme.colors.accent.primary : theme.colors.border.default};
-  border-radius: ${theme.radius.full};
+  border-radius: 0;
   font-size: ${theme.typography.sizes.sm};
   font-weight: ${theme.typography.weights.medium};
   cursor: pointer;
@@ -835,11 +835,11 @@ const IconButton = styled.button`
   gap: ${theme.spacing.xs};
   padding: ${theme.spacing.md};
   background: ${(props) =>
-    props.$selected ? theme.colors.accent.gradientSoft : theme.colors.bg.card};
+    props.$selected ? theme.colors.accent.primary : theme.colors.bg.card};
   border: 2px solid
     ${(props) =>
       props.$selected ? theme.colors.accent.primary : theme.colors.border.default};
-  border-radius: ${theme.radius.md};
+  border-radius: 0;
   cursor: pointer;
   transition: all ${theme.transition.base};
   min-height: 90px;
@@ -861,10 +861,10 @@ const IconButton = styled.button`
     min-height: 100px;
 
     &:hover {
-      background: ${theme.colors.accent.gradientSoft};
+      background: ${theme.colors.accent.primary};
       border-color: ${theme.colors.accent.primary};
       transform: translateY(-2px);
-      box-shadow: ${theme.shadow.md}, 0 0 0 1px rgba(99, 102, 241, 0.2);
+      box-shadow: none, 0 0 0 1px rgba(99, 102, 241, 0.2);
 
       svg {
         color: ${theme.colors.accent.primary};
@@ -890,7 +890,7 @@ const IconButton = styled.button`
     &:active {
       transform: scale(0.95);
       background: ${(props) =>
-        props.$selected ? theme.colors.accent.gradientSoft : theme.colors.bg.cardHover};
+        props.$selected ? theme.colors.accent.primary : theme.colors.bg.cardHover};
     }
   }
 `;

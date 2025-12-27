@@ -1,69 +1,46 @@
-/**
- * Theme Configuration
- *
- * Современная тема в стиле neo-glass / soft dark UI
- * Оптимизирована для Telegram Web App и мобильных устройств
- */
-
 export const theme = {
-  // Colors - Beige base with warm accent colors
   colors: {
-    // Backgrounds
     bg: {
-      primary: "#faf8f3", // Light beige base
-      secondary: "#f5f1eb", // Slightly darker beige
-      glass: "rgba(255, 255, 255, 0.7)", // Glass effect on beige
-      glassHover: "rgba(255, 255, 255, 0.8)",
-      card: "rgba(255, 255, 255, 0.85)", // White cards on beige
-      cardHover: "rgba(255, 255, 255, 0.95)",
-      overlay: "rgba(0, 0, 0, 0.3)",
+      primary: "#1e1e1e",
+      secondary: "#252526",
+      card: "#252526",
+      cardHover: "#2d2d30",
+      overlay: "rgba(0, 0, 0, 0.7)",
     },
 
-    // Accent colors (warm brown/terracotta palette for beige background)
     accent: {
-      primary: "#C44536", // Warm terracotta red (primary accent)
-      primaryHover: "#A6392D",
-      secondary: "#D2691E", // Chocolate orange
-      tertiary: "#CD5C5C", // Indian red
-      gradient: "linear-gradient(135deg, #C44536 0%, #D2691E 100%)",
-      gradientSoft:
-        "linear-gradient(135deg, rgba(196, 69, 54, 0.15) 0%, rgba(210, 105, 30, 0.15) 100%)",
+      primary: "#007acc",
+      primaryHover: "#005a9e",
+      secondary: "#4ec9b0",
+      tertiary: "#569cd6",
     },
 
-    // Text
     text: {
-      primary: "#2c2c2c", // Dark text on beige
-      secondary: "rgba(44, 44, 44, 0.85)",
-      tertiary: "rgba(44, 44, 44, 0.6)",
-      muted: "rgba(44, 44, 44, 0.5)",
-      inverse: "#faf8f3", // Beige for inverse (on dark elements)
+      primary: "#cccccc",
+      secondary: "rgba(204, 204, 204, 0.85)",
+      tertiary: "rgba(204, 204, 204, 0.6)",
+      muted: "rgba(204, 204, 204, 0.5)",
     },
 
-    // Status colors (warm tones for beige background)
     status: {
-      success: "#27ae60", // Green (slightly warmer)
-      error: "#C44536", // Terracotta red
-      warning: "#e67e22", // Warm orange
-      info: "#3498db", // Blue (kept for info)
+      success: "#4ec9b0",
+      error: "#f48771",
+      warning: "#dcdcaa",
+      info: "#569cd6",
     },
-
-    // Border
     border: {
-      default: "rgba(44, 44, 44, 0.15)", // Subtle dark borders on beige
-      hover: "rgba(44, 44, 44, 0.25)",
-      accent: "rgba(196, 69, 54, 0.4)", // Terracotta accent
-      accentHover: "rgba(196, 69, 54, 0.6)",
+      default: "rgba(255, 255, 255, 0.1)",
+      hover: "rgba(255, 255, 255, 0.2)",
+      accent: "rgba(0, 122, 204, 0.5)",
+      accentHover: "rgba(0, 122, 204, 0.7)",
     },
-
-    // Progress bar colors (warm tones)
     progress: {
-      optionA: "#C44536", // Terracotta red
-      optionB: "#D2691E", // Chocolate orange
-      bg: "rgba(44, 44, 44, 0.1)", // Subtle dark background
+      optionA: "#007acc",
+      optionB: "#4ec9b0",
+      bg: "rgba(255, 255, 255, 0.08)",
     },
   },
 
-  // Spacing (mobile-first scale)
   spacing: {
     xs: "4px",
     sm: "8px",
@@ -73,28 +50,9 @@ export const theme = {
     xxl: "48px",
   },
 
-  // Border radius
-  radius: {
-    sm: "8px",
-    md: "12px",
-    lg: "16px",
-    xl: "24px",
-    full: "9999px",
-  },
-
-  // Shadows (soft, subtle for beige background)
-  shadow: {
-    sm: "0 2px 8px rgba(0, 0, 0, 0.1)",
-    md: "0 4px 16px rgba(0, 0, 0, 0.15)",
-    lg: "0 8px 32px rgba(0, 0, 0, 0.2)",
-    glow: "0 0 20px rgba(196, 69, 54, 0.3)",
-    glowStrong: "0 0 32px rgba(196, 69, 54, 0.4)",
-  },
-
-  // Typography
   typography: {
     fontFamily:
-      '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", sans-serif',
+      '-apple-system, BlinkMacSystemFont, "Segoe UI", "SF Pro Display", "Roboto", "Helvetica Neue", sans-serif',
     sizes: {
       xs: "12px",
       sm: "14px",
@@ -118,7 +76,6 @@ export const theme = {
     },
   },
 
-  // Transitions
   transition: {
     fast: "150ms ease",
     base: "200ms ease",
@@ -126,7 +83,6 @@ export const theme = {
     slower: "500ms ease",
   },
 
-  // Z-index scale
   zIndex: {
     base: 1,
     dropdown: 10,
@@ -136,7 +92,6 @@ export const theme = {
     tooltip: 50,
   },
 
-  // Breakpoints (mobile-first)
   breakpoints: {
     sm: "640px",
     md: "768px",
@@ -145,22 +100,4 @@ export const theme = {
   },
 };
 
-/**
- * Helper function to apply glass morphism effect
- */
-export const glassEffect = `
-  background: ${theme.colors.bg.glass};
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid ${theme.colors.border.default};
-`;
-
-/**
- * Helper function to apply card glass effect
- */
-export const cardGlass = `
-  background: ${theme.colors.bg.card};
-  backdrop-filter: blur(10px) saturate(120%);
-  -webkit-backdrop-filter: blur(10px) saturate(120%);
-  border: 1px solid ${theme.colors.border.default};
-`;
+export const cardGlass = `background: ${theme.colors.bg.card};`;

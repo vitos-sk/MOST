@@ -105,20 +105,20 @@ export function QuestionsTab({
 const StatsInfo = styled.div`
   ${cardGlass}
   padding: ${theme.spacing.md} ${theme.spacing.lg};
-  border-radius: ${theme.radius.md};
+  border-radius: 0;
   margin-bottom: ${theme.spacing.lg};
   border: 1px solid ${theme.colors.border.default};
-  background: ${theme.colors.accent.gradientSoft};
+  background: ${theme.colors.accent.primary};
 
   p {
     margin: 0;
-    color: ${theme.colors.text.primary};
+    color: #ffffff;
     font-size: ${theme.typography.sizes.base};
     font-weight: ${theme.typography.weights.medium};
 
     strong {
       font-weight: ${theme.typography.weights.bold};
-      color: ${theme.colors.accent.primary};
+      color: #ffffff;
     }
   }
 `;
@@ -134,7 +134,7 @@ const FilterSection = styled.div`
   gap: ${theme.spacing.md};
   margin-bottom: ${theme.spacing.lg};
   padding: ${theme.spacing.md} ${theme.spacing.lg};
-  border-radius: ${theme.radius.md};
+  border-radius: 0;
   border: 1px solid ${theme.colors.border.default};
   background: ${theme.colors.bg.card};
   flex-wrap: wrap;
@@ -152,7 +152,7 @@ const CategorySelect = styled.select`
   min-width: 200px;
   padding: ${theme.spacing.md};
   border: 1px solid ${theme.colors.border.default};
-  border-radius: ${theme.radius.md};
+  border-radius: 0;
   font-size: ${theme.typography.sizes.base};
   background: ${theme.colors.bg.card};
   color: ${theme.colors.text.primary};
@@ -186,7 +186,7 @@ const EmptyState = styled.div`
   padding: ${theme.spacing.xxl} ${theme.spacing.lg};
   color: ${theme.colors.text.tertiary};
   font-size: ${theme.typography.sizes.base};
-  border-radius: ${theme.radius.md};
+  border-radius: 0;
   border: 1px solid ${theme.colors.border.default};
   background: ${theme.colors.bg.card};
 `;

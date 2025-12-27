@@ -1,13 +1,17 @@
 // Validate question form data
 export const validateQuestionForm = (formData) => {
-  const { category, text, optionA, optionB, majorityReason, minorityReason } = formData;
+  const { category, code, optionA, optionB, optionC, correctAnswer } = formData;
 
-  if (!category || !text || !optionA || !optionB || !majorityReason || !minorityReason) {
+  if (!category || !code || !optionA || !optionB || !optionC || !correctAnswer) {
     return { valid: false, error: "Заполните все поля" };
   }
 
-  if (text.length < 10) {
-    return { valid: false, error: "Вопрос должен быть минимум 10 символов" };
+  if (code.trim().length < 5) {
+    return { valid: false, error: "Код должен быть минимум 5 символов" };
+  }
+
+  if (!["A", "B", "C"].includes(correctAnswer)) {
+    return { valid: false, error: "Выберите правильный ответ (A, B или C)" };
   }
 
   return { valid: true };

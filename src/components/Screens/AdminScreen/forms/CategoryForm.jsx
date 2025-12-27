@@ -27,7 +27,7 @@ export function CategoryForm({ formData, loading, onInputChange, onSubmit }) {
           name="name"
           value={formData.name}
           onChange={onInputChange}
-          placeholder="Например: Здоровье"
+          placeholder="Например: Асинхронные функции"
           required
         />
 
@@ -48,10 +48,10 @@ export function CategoryForm({ formData, loading, onInputChange, onSubmit }) {
 const Form = styled.form`
   ${cardGlass}
   padding: ${theme.spacing.xl} ${theme.spacing.lg};
-  border-radius: ${theme.radius.lg};
+  border-radius: 0;
   margin-top: ${theme.spacing.md};
   margin-bottom: ${theme.spacing.xl};
-  box-shadow: ${theme.shadow.md};
+  box-shadow: none;
   border: 1px solid ${theme.colors.border.default};
   background: ${theme.colors.bg.card};
   position: relative;

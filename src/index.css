@@ -9,7 +9,7 @@ html {
   -moz-osx-font-smoothing: grayscale;
   touch-action: manipulation;
   overflow-x: hidden;
-  background: transparent;
+  background: #1e1e1e;
 }
 
 html,
@@ -19,11 +19,13 @@ body {
   width: 100%;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+  background: #1e1e1e;
 }
 
 body {
   overflow-y: auto;
-  background-color: #dcd5c0;
+  background: #1e1e1e;
+  background-color: #1e1e1e;
   background-image: none;
 }
 
@@ -61,5 +63,5 @@ h6 {
 #root {
   width: 100%;
   min-height: 100vh;
-  background: transparent;
+  background: #1e1e1e;
 }

@@ -34,11 +34,11 @@ export function AdminPanel() {
   const [showQuestionForm, setShowQuestionForm] = useState(false);
   const [questionFormData, setQuestionFormData] = useState({
     category: "",
-    text: "",
+    code: "",
     optionA: "",
     optionB: "",
-    majorityReason: "",
-    minorityReason: "",
+    optionC: "",
+    correctAnswer: "",
   });
 
   // Для табы "Категории"
@@ -102,11 +102,11 @@ export function AdminPanel() {
   const handleAddQuestion = async () => {
     if (
       !questionFormData.category ||
-      !questionFormData.text ||
+      !questionFormData.code ||
       !questionFormData.optionA ||
       !questionFormData.optionB ||
-      !questionFormData.majorityReason ||
-      !questionFormData.minorityReason
+      !questionFormData.optionC ||
+      !questionFormData.correctAnswer
     ) {
       showError("Заполните все поля");
       return;
@@ -119,11 +119,11 @@ export function AdminPanel() {
       const addedCategoryId = questionFormData.category;
       setQuestionFormData({
         category: "",
-        text: "",
+        code: "",
         optionA: "",
         optionB: "",
-        majorityReason: "",
-        minorityReason: "",
+        optionC: "",
+        correctAnswer: "",
       });
       setShowQuestionForm(false);
       await loadData();
@@ -184,7 +184,7 @@ export function AdminPanel() {
 
     setLoading(true);
     try {
-      await addCategory(categoryFormData);
+      await addCategory({ name, emoji });
       showSuccess("Категория добавлена");
       setCategoryFormData({ name: "", emoji: "" });
       setShowCategoryForm(false);
@@ -211,7 +211,68 @@ export function AdminPanel() {
   };
 
   const handleInitializeCategories = async () => {
-    showInfo("Функция инициализации категорий не реализована");
+    const confirmed = await showConfirm(
+      "Это создаст категории: Функции, Асинхронные функции, Циклы, Стрелочные функции. Продолжить?"
+    );
+    if (!confirmed) return;
+
+    setLoading(true);
+    try {
+      // Создаем категории
+      const functionsId = await addCategory({
+        name: "Функции",
+        emoji: "code",
+      });
+
+      const asyncFunctionsId = await addCategory({
+        name: "Асинхронные функции",
+        emoji: "code",
+      });
+
+      const loopsId = await addCategory({
+        name: "Циклы",
+        emoji: "code",
+      });
+
+      const arrowFunctionsId = await addCategory({
+        name: "Стрелочные функции",
+        emoji: "code",
+      });
+
+      // Добавляем тестовые вопросы в категорию "Асинхронные функции"
+      const testQuestions = [
+        {
+          category: asyncFunctionsId,
+          code: `let x = 1;
+let y = x++;
+console.log(x, y);`,
+          optionA: "1, 1",
+          optionB: "2, 1",
+          optionC: "1, 2",
+          correctAnswer: "B",
+        },
+        {
+          category: asyncFunctionsId,
+          code: `const arr = [1, 2, 3];
+arr.push(4);
+console.log(arr.length);`,
+          optionA: "3",
+          optionB: "4",
+          optionC: "undefined",
+          correctAnswer: "B",
+        },
+      ];
+
+      for (const question of testQuestions) {
+        await addQuestion(question);
+      }
+
+      showSuccess("Категории созданы!");
+      await loadData();
+    } catch (error) {
+      showError("Ошибка инициализации категорий");
+    }
+    setLoading(false);
   };
 
   // ===== РЕНДЕР =====
@@ -321,9 +382,9 @@ const Header = styled.div`
   align-items: center;
   margin-bottom: ${theme.spacing.lg};
   padding: ${theme.spacing.md} ${theme.spacing.lg};
-  border-radius: ${theme.radius.lg};
+  border-radius: 0;
   border: 1px solid ${theme.colors.border.default};
-  box-shadow: ${theme.shadow.md};
+  box-shadow: none;
   background: ${theme.colors.bg.card};
 
   @media (max-width: ${theme.breakpoints.sm}) {
@@ -338,10 +399,6 @@ const HeaderTitle = styled.h1`
   font-size: ${theme.typography.sizes.xl};
   color: ${theme.colors.text.primary};
   font-weight: ${theme.typography.weights.bold};
-  background: ${theme.colors.accent.gradient};
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 
   @media (min-width: ${theme.breakpoints.sm}) {
     font-size: ${theme.typography.sizes["2xl"]};
@@ -353,7 +410,7 @@ const LogoutButton = styled.button`
   background: ${theme.colors.status.error};
   color: ${theme.colors.text.primary};
   border: none;
-  border-radius: ${theme.radius.md};
+  border-radius: 0;
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
@@ -367,7 +424,7 @@ const LogoutButton = styled.button`
   &:hover {
     background: #dc2626;
     transform: translateY(-1px);
-    box-shadow: ${theme.shadow.md};
+    box-shadow: none;
   }
 
   &:active {
@@ -389,10 +446,10 @@ const LoadingText = styled.div`
 
 const AccessDenied = styled.div`
   ${cardGlass}
-  border-radius: ${theme.radius.lg};
+  border-radius: 0;
   padding: ${theme.spacing.xl} ${theme.spacing.lg};
   text-align: center;
-  box-shadow: ${theme.shadow.lg};
+  box-shadow: none;
   border: 1px solid ${theme.colors.border.default};
   max-width: 500px;
   margin: 0 auto;
@@ -419,11 +476,11 @@ const AccessDeniedText = styled.p`
 
 const TabContainer = styled.div`
   ${cardGlass}
-  border-radius: ${theme.radius.lg};
+  border-radius: 0;
   padding: ${theme.spacing.lg};
   position: relative;
   z-index: 1;
-  box-shadow: ${theme.shadow.md};
+  box-shadow: none;
   border: 1px solid ${theme.colors.border.default};
   background: ${theme.colors.bg.card};
 
@@ -485,7 +542,7 @@ const FixedBackButton = styled.button`
   left: ${theme.spacing.md};
   width: 56px;
   height: 56px;
-  border-radius: ${theme.radius.full};
+  border-radius: 0;
   border: 1px solid ${theme.colors.border.default};
   display: flex;
   align-items: center;
@@ -498,7 +555,7 @@ const FixedBackButton = styled.button`
   padding: 0;
   background: ${theme.colors.bg.glass};
   z-index: ${theme.zIndex.sticky};
-  box-shadow: ${theme.shadow.md};
+  box-shadow: none;
 
   /* Для мобильных: активное состояние вместо hover */
   &:active {
@@ -516,7 +573,7 @@ const FixedBackButton = styled.button`
       background: ${theme.colors.bg.cardHover};
       border-color: ${theme.colors.border.accent};
       transform: translateX(-2px);
-      box-shadow: ${theme.shadow.lg};
+      box-shadow: none;
     }
 
     &:active {

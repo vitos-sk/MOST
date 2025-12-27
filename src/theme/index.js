@@ -1,4 +1,4 @@
 /**
  * Theme exports
  */
-export { theme, glassEffect, cardGlass } from "./theme";
+export { theme, cardGlass } from "./theme";

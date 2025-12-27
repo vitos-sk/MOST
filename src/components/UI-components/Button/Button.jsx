@@ -19,7 +19,7 @@ export const Button = ({
 
 const StyledButton = styled.button`
   background: ${(props) => {
-    if (props.$variant === "primary") return theme.colors.accent.gradient;
+    if (props.$variant === "primary") return theme.colors.accent.primary;
     if (props.$variant === "secondary") return theme.colors.bg.card;
     if (props.$variant === "outline") return "transparent";
     if (props.$variant === "ghost") return "transparent";
@@ -34,13 +34,7 @@ const StyledButton = styled.button`
     return theme.colors.text.primary;
   }};
 
-  border: ${(props) => {
-    if (props.$variant === "primary") return "2px solid transparent";
-    if (props.$variant === "outline") return `2px solid ${theme.colors.border.accent}`;
-    if (props.$variant === "secondary") return `1px solid ${theme.colors.border.default}`;
-    if (props.$variant === "ghost") return "2px solid transparent";
-    return `1px solid ${theme.colors.border.default}`;
-  }};
+  border: none;
 
   /* Компактные размеры */
   padding: ${(props) => {
@@ -69,7 +63,7 @@ const StyledButton = styled.button`
     }};
   }
 
-  border-radius: ${theme.radius.md};
+  border-radius: 0;
   font-weight: ${theme.typography.weights.semibold};
   font-family: ${theme.typography.fontFamily};
   cursor: pointer;
@@ -81,33 +75,8 @@ const StyledButton = styled.button`
   align-items: center;
   justify-content: center;
   gap: ${theme.spacing.sm};
-  box-shadow: ${(props) => {
-    if (props.$variant === "ghost") return "none";
-    if (props.$variant === "primary") return theme.shadow.glow;
-    return theme.shadow.sm;
-  }};
+  box-shadow: none;
   position: relative;
-  overflow: hidden;
-
-  ${(props) => props.$variant === "secondary" && cardGlass}
-
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: ${theme.colors.accent.gradientSoft};
-    opacity: 0;
-    transition: opacity ${theme.transition.base};
-    z-index: 0;
-  }
-
-  > * {
-    position: relative;
-    z-index: 1;
-  }
 
   /* Для мобильных: активное состояние вместо hover */
   &:active:not(:disabled) {
@@ -121,7 +90,7 @@ const StyledButton = styled.button`
 
     &:active:not(:disabled) {
       transform: translateY(0);
-      box-shadow: ${theme.shadow.sm};
+      box-shadow: none;
     }
   }
 
@@ -129,33 +98,26 @@ const StyledButton = styled.button`
     ${(props) => {
       if (props.$variant === "primary") {
         return `
-          box-shadow: ${theme.shadow.glowStrong};
-          filter: brightness(1.1);
+          background: ${theme.colors.accent.primaryHover};
         `;
       }
       if (props.$variant === "secondary") {
         return `
           background: ${theme.colors.bg.cardHover};
-          border-color: ${theme.colors.border.hover};
-          box-shadow: ${theme.shadow.md};
         `;
       }
       if (props.$variant === "outline") {
         return `
-          background: ${theme.colors.accent.gradientSoft};
-          border-color: ${theme.colors.border.accentHover};
-          box-shadow: ${theme.shadow.sm};
+          background: ${theme.colors.bg.secondary};
         `;
       }
       if (props.$variant === "ghost") {
         return `
-          background: ${theme.colors.bg.glassHover};
+          background: ${theme.colors.bg.secondary};
         `;
       }
       return `
         background: ${theme.colors.bg.cardHover};
-        border-color: ${theme.colors.border.hover};
-        box-shadow: ${theme.shadow.md};
       `;
     }}
   }

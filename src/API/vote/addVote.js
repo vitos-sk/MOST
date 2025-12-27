@@ -22,7 +22,7 @@ import { logError, isNetworkError } from "../../utils/errorHandler";
  * Проверяет, не голосовал ли пользователь ранее, и обновляет счетчики голосов
  * @param {string} userId - ID пользователя
  * @param {string} questionId - ID вопроса
- * @param {string} choice - Выбор пользователя ('A' или 'B')
+ * @param {string} choice - Выбор пользователя ('A', 'B' или 'C')
  * @returns {Promise<Object>} Объект с полем success (true/false) и message (если ошибка)
  * @throws {Error} В случае ошибки при добавлении голоса в базу данных
  */
@@ -36,25 +36,60 @@ export const addVote = async (userId, questionId, choice) => {
     );
     const querySnapshot = await getDocs(q);
 
+    const questionRef = doc(db, "questions", questionId);
+    const fieldMap = {
+      A: "votesOptionA",
+      B: "votesOptionB",
+      C: "votesOptionC",
+    };
+
     if (!querySnapshot.empty) {
-      // Пользователь уже голосовал
-      return { success: false, message: "Вы уже голосовали" };
+      // Пользователь уже голосовал - обновляем существующий голос
+      const existingVote = querySnapshot.docs[0];
+      const oldChoice = existingVote.data().choice;
+
+      // Обновляем голос
+      await updateDoc(existingVote.ref, {
+        choice,
+        timestamp: serverTimestamp(),
+      });
+
+      // Обновляем счетчики: уменьшаем старый, увеличиваем новый
+      if (oldChoice !== choice) {
+        const oldField = fieldMap[oldChoice];
+        const newField = fieldMap[choice];
+
+        const updates = {};
+        if (oldField) {
+          updates[oldField] = increment(-1);
+        }
+        if (newField) {
+          updates[newField] = increment(1);
+        }
+
+        if (Object.keys(updates).length > 0) {
+          await updateDoc(questionRef, updates);
+        }
+      }
+
+      return { success: true };
     }
 
-    // Добавляем голос
+    // Добавляем новый голос
     await addDoc(collection(db, "votes"), {
       userId,
       questionId,
-      choice, // 'A' или 'B'
+      choice, // 'A', 'B' или 'C'
       timestamp: serverTimestamp(),
     });
 
     // Обновляем счётчик голосов в вопросе
-    const questionRef = doc(db, "questions", questionId);
-    const field = choice === "A" ? "votesOptionA" : "votesOptionB";
-    await updateDoc(questionRef, {
-      [field]: increment(1),
-    });
+    const field = fieldMap[choice];
+    if (field) {
+      await updateDoc(questionRef, {
+        [field]: increment(1),
+      });
+    }
 
     return { success: true };
   } catch (error) {

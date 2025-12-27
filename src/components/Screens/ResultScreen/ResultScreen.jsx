@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { getQuestionsByCategory, getQuestions, getVotesByQuestion } from "../../../API";
 import { theme, cardGlass } from "../../../theme/theme";
 import { useAuth } from "../../../context/AuthContext";
+import { CodeHighlight, Button as UIButton, BackButton } from "../../UI-components";
 
 export function ResultScreen() {
   const { questionId, categoryId } = useParams();
@@ -43,7 +44,7 @@ export function ResultScreen() {
       if (user?.id) {
         const userVote = voteData.find((vote) => vote.userId === user.id);
         if (userVote) {
-          setUserChoice(userVote.choice); // 'A' или 'B'
+          setUserChoice(userVote.choice); // 'A', 'B' или 'C'
         }
       }
 
@@ -90,130 +91,129 @@ export function ResultScreen() {
       <Container>
         <ResultBox>
           <ErrorText>{error || "Ошибка загрузки"}</ErrorText>
+          <ButtonGroup>
+            <UIButton onClick={() => navigate("/")} variant="secondary">
+              Назад к категориям
+            </UIButton>
+          </ButtonGroup>
         </ResultBox>
-        <ButtonWrapper>
-          <BackButton onClick={() => navigate("/")}>Назад к категориям</BackButton>
-        </ButtonWrapper>
-        <FixedBackButton onClick={() => navigate(-1)} aria-label="Назад">
-          <BackIcon>‹</BackIcon>
-        </FixedBackButton>
+        <BackButton onClick={() => navigate(-1)} />
       </Container>
     );
   }
 
-  const totalVotes = (question.votesOptionA || 0) + (question.votesOptionB || 0);
+  const totalVotes =
+    (question.votesOptionA || 0) +
+    (question.votesOptionB || 0) +
+    (question.votesOptionC || 0);
   const percentageA =
-    totalVotes > 0 ? Math.round((question.votesOptionA / totalVotes) * 100) : 0;
-  const percentageB = totalVotes > 0 ? 100 - percentageA : 0;
+    totalVotes > 0 ? Math.round(((question.votesOptionA || 0) / totalVotes) * 100) : 0;
+  const percentageB =
+    totalVotes > 0 ? Math.round(((question.votesOptionB || 0) / totalVotes) * 100) : 0;
+  const percentageC = totalVotes > 0 ? 100 - percentageA - percentageB : 0;
 
-  const isMajorityA = percentageA >= 50;
+  const correctAnswer = question.correctAnswer || "A";
+  const isCorrect = userChoice === correctAnswer;
 
-  // Определяем, какое объяснение показывать пользователю
-  // Объяснение должно показывать причину выбора варианта большинством,
-  // независимо от выбора пользователя
-  const getExplanationForUser = () => {
-    if (isMajorityA) {
-      // Большинство выбрало вариант A
-      return {
-        title: "Почему большинство выбирает первый вариант?",
-        text: question.majorityReason,
-      };
-    } else {
-      // Большинство выбрало вариант B
-      return {
-        title: "Почему большинство выбирает второй вариант?",
-        text: question.minorityReason,
-      };
-    }
+  const renderOption = (optionKey, optionText, percentage, voteCount) => {
+    const isUserChoice = userChoice === optionKey;
+    const isCorrectOption = correctAnswer === optionKey;
+    const showCorrectBadge = isCorrectOption;
+    const showWrongBadge = isUserChoice && !isCorrectOption;
+
+    return (
+      <StatisticsBlock key={optionKey}>
+        <OptionLabel>
+          <OptionName>
+            Вариант {optionKey}: {optionText}
+            {showCorrectBadge && <CorrectBadge>✓ Правильный ответ</CorrectBadge>}
+            {showWrongBadge && <WrongBadge>✗ Ваш ответ</WrongBadge>}
+          </OptionName>
+          <PercentageLabel>{percentage}%</PercentageLabel>
+        </OptionLabel>
+        <ProgressBar>
+          <ProgressFill
+            $option={optionKey}
+            $width={percentage}
+            $isCorrect={isCorrectOption}
+            $isUserChoice={isUserChoice && !isCorrectOption}
+          >
+            {percentage > 10 && `${percentage}%`}
+          </ProgressFill>
+        </ProgressBar>
+        <VoteCount>{voteCount}</VoteCount>
+      </StatisticsBlock>
+    );
   };
-
-  const explanation = getExplanationForUser();
 
   return (
     <Container>
       <ResultBox>
-        <Title>Результаты голосования</Title>
+        <Title>Результаты</Title>
 
-        <StatisticsBlock>
-          <OptionLabel>
-            <OptionName>Вариант A: {question.optionA}</OptionName>
-            <PercentageLabel>{percentageA}%</PercentageLabel>
-          </OptionLabel>
-          <ProgressBar>
-            <ProgressFill $isA={true} $width={percentageA}>
-              {percentageA > 15 && `${percentageA}%`}
-            </ProgressFill>
-          </ProgressBar>
-          <VoteCount>{question.votesOptionA || 0} голосов</VoteCount>
-        </StatisticsBlock>
+        <ResultStatus $isCorrect={isCorrect}>
+          {isCorrect ? (
+            <>
+              <StatusIcon>✓</StatusIcon>
+              <StatusText>Правильно!</StatusText>
+            </>
+          ) : (
+            <>
+              <StatusIcon $wrong>✗</StatusIcon>
+              <StatusText>Неправильно</StatusText>
+            </>
+          )}
+        </ResultStatus>
 
-        <StatisticsBlock>
-          <OptionLabel>
-            <OptionName>Вариант B: {question.optionB}</OptionName>
-            <PercentageLabel>{percentageB}%</PercentageLabel>
-          </OptionLabel>
-          <ProgressBar>
-            <ProgressFill $isA={false} $width={percentageB}>
-              {percentageB > 15 && `${percentageB}%`}
-            </ProgressFill>
-          </ProgressBar>
-          <VoteCount>{question.votesOptionB || 0} голосов</VoteCount>
-        </StatisticsBlock>
+        <CodeBlock>
+          <CodeLabel>Код</CodeLabel>
+          <CodeHighlight code={question.code} language="javascript" />
+        </CodeBlock>
 
-        <ExplanationBlock>
-          <ExplanationTitle>{explanation.title}</ExplanationTitle>
-          <ExplanationText>{explanation.text}</ExplanationText>
-        </ExplanationBlock>
+        {renderOption("A", question.optionA, percentageA, question.votesOptionA || 0)}
+        {renderOption("B", question.optionB, percentageB, question.votesOptionB || 0)}
+        {renderOption("C", question.optionC, percentageC, question.votesOptionC || 0)}
 
         <ButtonGroup>
-          <BackButton onClick={() => navigate("/")}>На главную</BackButton>
-          <ContinueButton onClick={handleNextQuestion}>
+          <UIButton onClick={() => navigate("/")} variant="secondary">
+            На главную
+          </UIButton>
+          <UIButton onClick={handleNextQuestion} variant="primary">
             {nextQuestion ? "Следующий вопрос" : "Вернуться к вопросам"}
-          </ContinueButton>
+          </UIButton>
         </ButtonGroup>
       </ResultBox>
-      <FixedBackButton onClick={() => navigate(-1)} aria-label="Назад">
-        <BackIcon>‹</BackIcon>
-      </FixedBackButton>
+      <BackButton onClick={() => navigate(-1)} />
     </Container>
   );
 }
 
 const Container = styled.div`
+  width: 100%;
+  padding: ${theme.spacing.sm};
   max-width: 100%;
   margin: 0 auto;
-  padding: ${theme.spacing.md};
   min-height: 100vh;
   height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-direction: column;
-  font-family: ${theme.typography.fontFamily};
-  overflow-y: auto;
-
-  @media (max-width: ${theme.breakpoints.sm}) {
-    padding: ${theme.spacing.sm};
-    height: 100dvh;
-  }
+  overflow: hidden;
+  background: ${theme.colors.bg.primary};
 `;
 
 export const ResultBox = styled.div`
   ${cardGlass}
-  border-radius: ${theme.radius.lg};
-  padding: ${theme.spacing.lg} ${theme.spacing.md};
-  box-shadow: ${theme.shadow.lg};
-  margin-bottom: ${theme.spacing.lg};
+  border-radius: 0;
+  padding: ${theme.spacing.md};
   animation: slideUp 0.3s ease-out;
+  transition: all ${theme.transition.base};
   width: 100%;
-  max-width: 600px;
-  margin: auto;
-
-  @media (max-width: ${theme.breakpoints.sm}) {
-    padding: ${theme.spacing.md};
-    max-height: calc(100vh - 32px);
-    overflow-y: auto;
-  }
+  max-width: 700px;
+  margin: 0 auto;
+  background: ${theme.colors.bg.card};
+  display: flex;
+  flex-direction: column;
 
   @keyframes slideUp {
     from {
@@ -225,29 +225,22 @@ export const ResultBox = styled.div`
       transform: translateY(0);
     }
   }
-
-  @media (min-width: ${theme.breakpoints.sm}) {
-    padding: ${theme.spacing.xl} ${theme.spacing.lg};
-  }
 `;
 
 const Title = styled.h2`
   color: ${theme.colors.text.primary};
-  font-size: ${theme.typography.sizes.xl};
-  margin: 0 0 ${theme.spacing.xl} 0;
+  font-size: ${theme.typography.sizes.base};
+  margin: 0 0 ${theme.spacing.sm} 0;
   text-align: center;
   font-weight: ${theme.typography.weights.bold};
-
-  @media (min-width: ${theme.breakpoints.sm}) {
-    font-size: ${theme.typography.sizes["2xl"]};
-  }
+  letter-spacing: -0.02em;
 `;
 
 export const StatisticsBlock = styled.div`
-  margin-bottom: ${theme.spacing.xl};
+  margin-bottom: ${theme.spacing.sm};
 
   &:last-of-type {
-    margin-bottom: ${theme.spacing.xl};
+    margin-bottom: ${theme.spacing.sm};
   }
 `;
 
@@ -255,56 +248,49 @@ const OptionLabel = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: ${theme.spacing.md};
-  font-weight: ${theme.typography.weights.semibold};
+  margin-bottom: ${theme.spacing.xs};
+  font-weight: ${theme.typography.weights.medium};
   color: ${theme.colors.text.primary};
 `;
 
 const OptionName = styled.span`
-  font-size: ${theme.typography.sizes.base};
+  font-size: ${theme.typography.sizes.sm};
   color: ${theme.colors.text.primary};
-
-  @media (min-width: ${theme.breakpoints.sm}) {
-    font-size: ${theme.typography.sizes.md};
-  }
 `;
 
 export const PercentageLabel = styled.span`
-  font-size: ${theme.typography.sizes.md};
+  font-size: ${theme.typography.sizes.sm};
   color: ${theme.colors.accent.primary};
-  font-weight: ${theme.typography.weights.bold};
-
-  @media (min-width: ${theme.breakpoints.sm}) {
-    font-size: ${theme.typography.sizes.lg};
-  }
+  font-weight: ${theme.typography.weights.medium};
 `;
 
 export const ProgressBar = styled.div`
   background: ${theme.colors.progress.bg};
-  height: 32px;
-  border-radius: ${theme.radius.full};
+  height: 24px;
+  border-radius: 0;
   overflow: hidden;
   position: relative;
-  border: 1px solid ${theme.colors.border.default};
-
-  @media (min-width: ${theme.breakpoints.sm}) {
-    height: 36px;
-  }
+  border: none;
 `;
 
 const ProgressFill = styled.div`
   height: 100%;
   width: ${(props) => props.$width}%;
-  background: ${(props) =>
-    props.$isA ? theme.colors.progress.optionA : theme.colors.progress.optionB};
+  background: ${(props) => {
+    if (props.$isCorrect) return "#27ae60";
+    if (props.$isUserChoice) return "#e74c3c";
+    if (props.$option === "A") return theme.colors.progress.optionA;
+    if (props.$option === "B") return theme.colors.progress.optionB;
+    return "#9333ea";
+  }};
   transition: width ${theme.transition.slower} cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
-  justify-content: ${(props) => (props.$width > 15 ? "flex-end" : "center")};
-  padding: 0 ${theme.spacing.md};
+  justify-content: ${(props) => (props.$width > 10 ? "flex-end" : "center")};
+  padding: 0 ${theme.spacing.xs};
   color: ${theme.colors.text.primary};
-  font-weight: ${theme.typography.weights.bold};
-  font-size: ${theme.typography.sizes.sm};
+  font-weight: ${theme.typography.weights.medium};
+  font-size: ${theme.typography.sizes.xs};
   position: relative;
   overflow: hidden;
   animation: fillProgress 0.5s ease-out;
@@ -312,31 +298,6 @@ const ProgressFill = styled.div`
   @keyframes fillProgress {
     from {
       width: 0;
-    }
-  }
-
-  &::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.2) 50%,
-      transparent 100%
-    );
-    animation: shimmer 2s infinite;
-  }
-
-  @keyframes shimmer {
-    0% {
-      transform: translateX(-100%);
-    }
-    100% {
-      transform: translateX(200%);
     }
   }
 `;
@@ -348,110 +309,89 @@ const VoteCount = styled.div`
   font-weight: ${theme.typography.weights.medium};
 `;
 
-export const ExplanationBlock = styled.div`
+const ResultStatus = styled.div`
   ${cardGlass}
-  padding: ${theme.spacing.lg} ${theme.spacing.md};
-  border-radius: ${theme.radius.md};
-  margin-top: ${theme.spacing.md};
-  border-left: 4px solid ${theme.colors.accent.primary};
-  transition: all ${theme.transition.base};
-
-  &:first-of-type {
-    margin-top: ${theme.spacing.xl};
-  }
-
-  &:hover {
-    background: ${theme.colors.bg.cardHover};
-    border-left-color: ${theme.colors.accent.secondary};
-    transform: translateX(4px);
-  }
-
-  @media (min-width: ${theme.breakpoints.sm}) {
-    padding: ${theme.spacing.xl} ${theme.spacing.lg};
-  }
+  padding: ${theme.spacing.sm};
+  border-radius: 0;
+  margin-bottom: ${theme.spacing.sm};
+  border: none;
+  background: ${theme.colors.bg.secondary};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: ${theme.spacing.sm};
 `;
 
-const ExplanationTitle = styled.h4`
-  color: ${theme.colors.text.primary};
-  margin: 0 0 ${theme.spacing.md} 0;
+const StatusIcon = styled.span`
   font-size: ${theme.typography.sizes.base};
+  color: ${(props) => (props.$wrong ? "#e74c3c" : "#27ae60")};
   font-weight: ${theme.typography.weights.bold};
-  line-height: ${theme.typography.lineHeights.normal};
 `;
 
-const ExplanationText = styled.p`
+const StatusText = styled.span`
+  font-size: ${theme.typography.sizes.sm};
+  font-weight: ${theme.typography.weights.medium};
+  color: ${theme.colors.text.primary};
+`;
+
+const CorrectBadge = styled.span`
+  display: inline-block;
+  margin-left: ${theme.spacing.sm};
+  padding: ${theme.spacing.xs} ${theme.spacing.sm};
+  background: #27ae60;
+  color: white;
+  border-radius: 0;
+  font-size: ${theme.typography.sizes.xs};
+  font-weight: ${theme.typography.weights.bold};
+`;
+
+const WrongBadge = styled.span`
+  display: inline-block;
+  margin-left: ${theme.spacing.sm};
+  padding: ${theme.spacing.xs} ${theme.spacing.sm};
+  background: #e74c3c;
+  color: white;
+  border-radius: 0;
+  font-size: ${theme.typography.sizes.xs};
+  font-weight: ${theme.typography.weights.bold};
+`;
+
+const CodeBlock = styled.div`
+  ${cardGlass}
+  border-radius: 0;
+  padding: ${theme.spacing.xs};
+  margin-bottom: ${theme.spacing.sm};
+  border: none;
+  background: ${theme.colors.bg.secondary};
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 1;
+  min-height: 0;
+`;
+
+const CodeLabel = styled.div`
   color: ${theme.colors.text.secondary};
-  margin: 0;
-  line-height: ${theme.typography.lineHeights.relaxed};
-  font-size: ${theme.typography.sizes.base};
+  font-size: ${theme.typography.sizes.xs};
+  font-weight: ${theme.typography.weights.medium};
+  margin-bottom: ${theme.spacing.xs};
+  display: flex;
+  align-items: center;
+  gap: ${theme.spacing.xs};
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+`;
+
+const CodeIcon = styled.span`
+  font-size: ${theme.typography.sizes.xl};
+  filter: grayscale(0.2);
 `;
 
 const ButtonGroup = styled.div`
   display: flex;
-  gap: ${theme.spacing.sm};
-  margin-top: ${theme.spacing.xl};
-  justify-content: center;
+  gap: ${theme.spacing.xs};
   flex-wrap: wrap;
-`;
-
-const Button = styled.button`
-  padding: ${theme.spacing.sm} ${theme.spacing.lg};
-  min-height: 36px;
-  border: none;
-  border-radius: ${theme.radius.md};
-  cursor: pointer;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  font-weight: ${theme.typography.weights.semibold};
-  font-size: ${theme.typography.sizes.base};
-  transition: all ${theme.transition.base};
-  font-family: ${theme.typography.fontFamily};
-
-  /* Для мобильных: активное состояние вместо hover */
-  &:active:not(:disabled) {
-    transform: scale(0.98);
-  }
-
-  @media (min-width: ${theme.breakpoints.sm}) {
-    min-height: auto;
-    &:hover:not(:disabled) {
-      transform: translateY(-2px);
-    }
-
-    &:active:not(:disabled) {
-      transform: translateY(0);
-    }
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
-`;
-
-const ContinueButton = styled(Button)`
-  background: ${theme.colors.accent.gradient};
-  color: ${theme.colors.text.primary};
-  box-shadow: ${theme.shadow.glow};
-
-  &:hover:not(:disabled) {
-    box-shadow: ${theme.shadow.glowStrong};
-    filter: brightness(1.1);
-  }
-`;
-
-const BackButton = styled(Button)`
-  ${cardGlass}
-  color: ${theme.colors.text.primary};
-  border: 1px solid ${theme.colors.border.default};
-
-  &:hover:not(:disabled) {
-    background: ${theme.colors.bg.cardHover};
-    border-color: ${theme.colors.border.hover};
-    box-shadow: ${theme.shadow.md};
-  }
+  justify-content: center;
+  margin-top: ${theme.spacing.md};
 `;
 
 const LoadingText = styled.div`
@@ -467,76 +407,6 @@ const ErrorText = styled.div`
   font-size: ${theme.typography.sizes.base};
   ${cardGlass}
   padding: ${theme.spacing.lg};
-  border-radius: ${theme.radius.md};
+  border-radius: 0;
   border-color: ${theme.colors.status.error};
-`;
-
-const ButtonWrapper = styled.div`
-  text-align: center;
-`;
-
-const FixedBackButton = styled.button`
-  ${cardGlass}
-  position: fixed;
-  bottom: ${theme.spacing.md};
-  left: ${theme.spacing.md};
-  width: 56px;
-  height: 56px;
-  border-radius: ${theme.radius.full};
-  border: 1px solid ${theme.colors.border.default};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  transition: all ${theme.transition.base};
-  padding: 0;
-  background: ${theme.colors.bg.glass};
-  z-index: ${theme.zIndex.sticky};
-  box-shadow: ${theme.shadow.md};
-
-  /* Для мобильных: активное состояние вместо hover */
-  &:active {
-    transform: scale(0.95);
-    background: ${theme.colors.bg.cardHover};
-  }
-
-  @media (min-width: ${theme.breakpoints.sm}) {
-    width: 52px;
-    height: 52px;
-    bottom: ${theme.spacing.lg};
-    left: ${theme.spacing.lg};
-
-    &:hover {
-      background: ${theme.colors.bg.cardHover};
-      border-color: ${theme.colors.border.accent};
-      transform: translateX(-2px);
-      box-shadow: ${theme.shadow.lg};
-    }
-
-    &:active {
-      transform: translateX(-1px);
-    }
-  }
-
-  &:focus-visible {
-    outline: 2px solid ${theme.colors.accent.primary};
-    outline-offset: 2px;
-  }
-
-  @media (min-width: ${theme.breakpoints.sm}) {
-    width: 52px;
-    height: 52px;
-    bottom: ${theme.spacing.lg};
-    left: ${theme.spacing.lg};
-  }
-`;
-
-const BackIcon = styled.span`
-  font-size: ${theme.typography.sizes["2xl"]};
-  color: ${theme.colors.text.primary};
-  line-height: 1;
-  font-weight: ${theme.typography.weights.bold};
 `;

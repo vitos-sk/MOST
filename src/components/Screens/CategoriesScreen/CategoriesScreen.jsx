@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { getCategories } from "../../../API/categories/getCategories";
+import { getCategories } from "../../../API";
 import { theme, cardGlass } from "../../../theme/theme";
 import { CategoryIcon } from "../../UI-components/CategoryIcon/CategoryIcon";
 import { Header } from "../../UI-components/Header/Header";
@@ -62,7 +62,6 @@ export function CategoriesScreen() {
                   <CategoryName>{cat.name}</CategoryName>
                   <CategoryArrow>›</CategoryArrow>
                 </CategoryContent>
-                <CategoryGlow />
               </CategoryCardInner>
             </CategoryCard>
           ))}
@@ -74,12 +73,13 @@ export function CategoriesScreen() {
 
 const Container = styled.div`
   width: 100%;
-  padding: 0;
+  padding: ${theme.spacing.sm};
   min-height: 100vh;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
+  align-items: center;
+  justify-content: center;
   overflow-y: auto;
 
   @media (max-width: ${theme.breakpoints.sm}) {
@@ -89,7 +89,7 @@ const Container = styled.div`
 
 const ContentWrapper = styled.div`
   width: 100%;
-  max-width: 100%;
+  max-width: 700px;
 `;
 
 const LoadingWrapper = styled.div`
@@ -155,46 +155,21 @@ const CategoriesGrid = styled.div`
   }
 `;
 
-// Объявляем дочерние компоненты перед родительским
-const CategoryGlow = styled.div`
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(
-    circle,
-    ${theme.colors.accent.primary}20 0%,
-    transparent 70%
-  );
-  border-radius: 50%;
-  transform: translate(-50%, -50%) scale(0.8);
-  opacity: 0;
-  transition: all ${theme.transition.slow};
-  pointer-events: none;
-  z-index: 0;
-`;
-
 const CategoryCardInner = styled.div`
-  padding: ${theme.spacing.xl} ${theme.spacing.md};
+  padding: ${theme.spacing.md};
   display: flex;
   align-items: center;
-  gap: ${theme.spacing.lg};
+  gap: ${theme.spacing.md};
   position: relative;
   z-index: 1;
   transition: background ${theme.transition.base};
-  min-height: 90px;
-
-  @media (min-width: ${theme.breakpoints.sm}) {
-    padding: ${theme.spacing.xl} ${theme.spacing.xl};
-    min-height: 120px;
-  }
+  min-height: 60px;
 `;
 
 const CategoryArrow = styled.span`
-  font-size: ${theme.typography.sizes["2xl"]};
+  font-size: ${theme.typography.sizes.lg};
   color: ${theme.colors.accent.primary};
-  font-weight: ${theme.typography.weights.bold};
+  font-weight: ${theme.typography.weights.semibold};
   transition: all ${theme.transition.base};
   opacity: 0.7;
   flex-shrink: 0;
@@ -202,14 +177,14 @@ const CategoryArrow = styled.span`
 
 export const CategoryCard = styled.button`
   ${cardGlass}
-  border-radius: ${theme.radius.xl};
+  border-radius: 0;
   padding: 0;
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   transition: all ${theme.transition.base};
-  border: 1px solid ${theme.colors.border.default};
+  border: none;
   box-shadow: none;
   animation: cardAppear 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   animation-delay: ${(props) => props.$delay || 0}ms;
@@ -229,76 +204,42 @@ export const CategoryCard = styled.button`
     }
   }
 
-  /* Для мобильных: активное состояние вместо hover */
   &:active {
-    transform: scale(0.98);
-    border-color: ${theme.colors.border.accentHover};
+    background: ${theme.colors.bg.cardHover};
     transition: all ${theme.transition.fast};
   }
 
   @media (min-width: ${theme.breakpoints.sm}) {
     &:hover {
-      transform: translateY(-4px) scale(1.02);
-      border-color: ${theme.colors.border.accentHover};
-      box-shadow: none;
-
-      ${CategoryGlow} {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1.2);
-      }
+      background: ${theme.colors.bg.cardHover};
 
       ${CategoryArrow} {
         transform: translateX(4px);
         opacity: 1;
       }
-
-      ${CategoryCardInner} {
-        background: ${theme.colors.accent.gradientSoft};
-      }
-    }
-
-    &:active {
-      transform: translateY(-2px) scale(1.01);
-      transition: all ${theme.transition.fast};
     }
   }
 
   &:focus-visible {
     outline: 2px solid ${theme.colors.accent.primary};
-    outline-offset: 4px;
-  }
-
-  @media (min-width: ${theme.breakpoints.sm}) {
-    border-radius: ${theme.radius.xl};
+    outline-offset: 2px;
   }
 `;
 
 const CategoryIconWrapper = styled.div`
   flex-shrink: 0;
-  width: 64px;
-  height: 64px;
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: ${theme.colors.accent.gradientSoft};
-  border-radius: ${theme.radius.lg};
+  background: ${theme.colors.bg.secondary};
+  border-radius: 0;
   box-shadow: none;
   position: relative;
   z-index: 2;
   transition: all ${theme.transition.base};
   padding: ${theme.spacing.sm};
-
-  ${CategoryCard}:hover & {
-    transform: scale(1.1) rotate(5deg);
-    box-shadow: none;
-    background: ${theme.colors.accent.gradientSoft};
-  }
-
-  @media (min-width: ${theme.breakpoints.sm}) {
-    width: 80px;
-    height: 80px;
-    padding: ${theme.spacing.md};
-  }
 
   svg {
     filter: none;
@@ -316,13 +257,9 @@ const CategoryContent = styled.div`
 `;
 
 const CategoryName = styled.span`
-  font-size: ${theme.typography.sizes.xl};
-  font-weight: ${theme.typography.weights.bold};
+  font-size: ${theme.typography.sizes.base};
+  font-weight: ${theme.typography.weights.semibold};
   color: ${theme.colors.text.primary};
   line-height: ${theme.typography.lineHeights.tight};
-  letter-spacing: -0.02em;
-
-  @media (min-width: ${theme.breakpoints.sm}) {
-    font-size: ${theme.typography.sizes["2xl"]};
-  }
+  letter-spacing: -0.01em;
 `;

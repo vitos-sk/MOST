@@ -28,16 +28,16 @@ export function CategoryCard({ category, onDelete, loading }) {
 const ItemCard = styled.div`
   ${cardGlass}
   border: 1px solid ${theme.colors.border.default};
-  border-radius: ${theme.radius.lg};
+  border-radius: 0;
   padding: ${theme.spacing.lg};
-  box-shadow: ${theme.shadow.md};
+  box-shadow: none;
   transition: all ${theme.transition.base};
   background: ${theme.colors.bg.card};
   position: relative;
   z-index: 1;
 
   &:hover {
-    box-shadow: ${theme.shadow.lg};
+    box-shadow: none;
     border-color: ${theme.colors.border.accent};
     transform: translateY(-2px);
   }
@@ -79,7 +79,7 @@ const Badge = styled.span`
   background: ${theme.colors.bg.glass};
   color: ${theme.colors.text.secondary};
   padding: ${theme.spacing.xs} ${theme.spacing.md};
-  border-radius: ${theme.radius.full};
+  border-radius: 0;
   font-size: ${theme.typography.sizes.xs};
   font-weight: ${theme.typography.weights.medium};
   border: 1px solid ${theme.colors.border.default};

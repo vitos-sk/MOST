@@ -80,10 +80,10 @@ const LoginCard = styled.div`
   width: 100%;
   max-width: 400px;
   padding: ${theme.spacing.xl};
-  border-radius: ${theme.radius.lg};
+  border-radius: 0;
   border: 1px solid ${theme.colors.border.default};
   background: ${theme.colors.bg.glass};
-  box-shadow: ${theme.shadow.lg};
+  box-shadow: none;
 `;
 
 const Title = styled.h1`
@@ -114,8 +114,8 @@ const Label = styled.label`
 
 const Input = styled.input`
   padding: ${theme.spacing.md};
-  border: 1px solid ${theme.colors.border.default};
-  border-radius: ${theme.radius.md};
+  border: none;
+  border-radius: 0;
   background: ${theme.colors.bg.card};
   color: ${theme.colors.text.primary};
   font-size: ${theme.typography.sizes.base};
@@ -123,8 +123,7 @@ const Input = styled.input`
 
   &:focus {
     outline: none;
-    border-color: ${theme.colors.accent.primary};
-    box-shadow: 0 0 0 3px ${theme.colors.accent.primary}20;
+    background: ${theme.colors.bg.secondary};
   }
 
   &:disabled {
@@ -137,18 +136,18 @@ const ErrorMessage = styled.div`
   padding: ${theme.spacing.md};
   background: ${theme.colors.status.error}20;
   color: ${theme.colors.status.error};
-  border-radius: ${theme.radius.md};
+  border-radius: 0;
   font-size: ${theme.typography.sizes.sm};
   text-align: center;
 `;
 
 const SubmitButton = styled.button`
   padding: ${theme.spacing.sm} ${theme.spacing.lg};
-  min-height: 36px;
-  background: ${theme.colors.accent.gradient};
+  min-height: 40px;
+  background: ${theme.colors.accent.primary};
   color: ${theme.colors.text.primary};
   border: none;
-  border-radius: ${theme.radius.md};
+  border-radius: 0;
   font-size: ${theme.typography.sizes.base};
   font-weight: ${theme.typography.weights.semibold};
   font-family: ${theme.typography.fontFamily};
@@ -158,27 +157,19 @@ const SubmitButton = styled.button`
   user-select: none;
   transition: all ${theme.transition.base};
   margin-top: ${theme.spacing.sm};
-  box-shadow: ${theme.shadow.glow};
+  box-shadow: none;
 
   &:hover:not(:disabled) {
-    filter: brightness(1.1);
+    background: ${theme.colors.accent.primaryHover};
     transform: translateY(-1px);
-    box-shadow: ${theme.shadow.glowStrong};
   }
 
   &:active:not(:disabled) {
-    transform: scale(0.98);
-  }
-
-  @media (min-width: ${theme.breakpoints.sm}) {
-    min-height: auto;
-    &:active:not(:disabled) {
-      transform: translateY(0);
-    }
+    transform: translateY(0);
   }
 
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
     transform: none;
   }
@@ -191,7 +182,7 @@ const FixedBackButton = styled.button`
   left: ${theme.spacing.md};
   width: 56px;
   height: 56px;
-  border-radius: ${theme.radius.full};
+  border-radius: 0;
   border: 1px solid ${theme.colors.border.default};
   display: flex;
   align-items: center;
@@ -204,7 +195,7 @@ const FixedBackButton = styled.button`
   padding: 0;
   background: ${theme.colors.bg.glass};
   z-index: ${theme.zIndex.sticky};
-  box-shadow: ${theme.shadow.md};
+  box-shadow: none;
 
   /* Для мобильных: активное состояние вместо hover */
   &:active {
@@ -222,7 +213,7 @@ const FixedBackButton = styled.button`
       background: ${theme.colors.bg.cardHover};
       border-color: ${theme.colors.border.accent};
       transform: translateX(-2px);
-      box-shadow: ${theme.shadow.lg};
+      box-shadow: none;
     }
 
     &:active {

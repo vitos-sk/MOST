@@ -88,10 +88,6 @@ const Title = styled.h1`
   letter-spacing: 0.1em;
   white-space: nowrap;
   text-transform: uppercase;
-  background: ${theme.colors.accent.gradient};
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
   position: relative;
 
   @media (min-width: ${theme.breakpoints.sm}) {
@@ -104,9 +100,9 @@ const UserInfo = styled.div`
   display: flex;
   align-items: center;
   padding: ${theme.spacing.xs} ${theme.spacing.md};
-  background: ${theme.colors.bg.glass};
-  border: 1px solid ${theme.colors.border.default};
-  border-radius: ${theme.radius.full};
+  background: ${theme.colors.bg.card};
+  border: none;
+  border-radius: 0;
   font-size: ${theme.typography.sizes.sm};
   color: ${theme.colors.text.secondary};
   flex-shrink: 0;
@@ -133,7 +129,7 @@ const MockBadge = styled.span`
   padding: 2px ${theme.spacing.xs};
   background: ${theme.colors.status.warning}30;
   color: ${theme.colors.status.warning};
-  border-radius: ${theme.radius.sm};
+  border-radius: 0;
   font-size: 9px;
   font-weight: ${theme.typography.weights.bold};
   text-transform: uppercase;

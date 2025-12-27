@@ -12,6 +12,7 @@
 
 // Categories API
 export { getCategories } from "./categories/getCategories";
+export { getSubcategories } from "./categories/getSubcategories";
 export { addCategory } from "./categories/addCategory";
 export { deleteCategory } from "./categories/deleteCategory";
 export { getCategoryName } from "./categories/getCategoryName";
