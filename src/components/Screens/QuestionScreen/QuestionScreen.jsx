@@ -48,9 +48,9 @@ export function QuestionScreen() {
   // Reset state when questions change
   useEffect(() => {
     if (questions.length > 0) {
-      setCurrentQuestionIndex(0);
-      setSelectedOption(null);
-    }
+          setCurrentQuestionIndex(0);
+          setSelectedOption(null);
+        }
   }, [questions.length, categoryId]);
 
   const handleVote = async () => {

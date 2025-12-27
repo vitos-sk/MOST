@@ -19,7 +19,7 @@ export function AdminLogin({ onLoginSuccess }) {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      onLoginSuccess();
+      onLoginSuccess?.();
     } catch (err) {
       setError("Неверный логин или пароль");
     } finally {
