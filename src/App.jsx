@@ -9,6 +9,7 @@ import {
 import { useEffect } from "react";
 import styled from "styled-components";
 import { theme } from "./theme/theme";
+import { ROUTES } from "./config/routes";
 import {
   AdminPanel,
   QuestionScreen,
@@ -31,18 +32,18 @@ function AppContent() {
 
   useEffect(() => {
     if (searchParams.get("admin") === "true" || searchParams.get("start") === "admin") {
-      navigate("/admin", { replace: true });
+      navigate(ROUTES.ADMIN, { replace: true });
     }
   }, [searchParams, navigate]);
 
   return (
     <AppContainer>
       <Routes>
-        <Route path="/admin/*" element={<AdminPanel />} />
-        <Route path="/" element={<CategoriesScreen />} />
-        <Route path="/questions/:categoryId" element={<QuestionScreen />} />
-        <Route path="/results/:questionId/:categoryId" element={<ResultScreen />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path={ROUTES.ADMIN_WILDCARD} element={<AdminPanel />} />
+        <Route path={ROUTES.HOME} element={<CategoriesScreen />} />
+        <Route path={ROUTES.QUESTIONS} element={<QuestionScreen />} />
+        <Route path={ROUTES.RESULTS} element={<ResultScreen />} />
+        <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
       </Routes>
     </AppContainer>
   );

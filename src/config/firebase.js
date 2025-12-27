@@ -15,16 +15,20 @@ import { getFirestore } from "firebase/firestore";
 
 /**
  * Конфигурация Firebase проекта
+ * Использует переменные окружения, если они заданы, иначе значения по умолчанию
  * @type {Object}
  */
 const firebaseConfig = {
-  apiKey: "AIzaSyA3K2xyG0DXKwCcYajXE_LUaIx3bekbt2I",
-  authDomain: "most-d17d9.firebaseapp.com",
-  projectId: "most-d17d9",
-  storageBucket: "most-d17d9.firebasestorage.app",
-  messagingSenderId: "681745157668",
-  appId: "1:681745157668:web:f69b5ba2ab1355f71ad2b1",
-  measurementId: "G-4G98V5Y8K9",
+  apiKey:
+    import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyA3K2xyG0DXKwCcYajXE_LUaIx3bekbt2I",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "most-d17d9.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "most-d17d9",
+  storageBucket:
+    import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "most-d17d9.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "681745157668",
+  appId:
+    import.meta.env.VITE_FIREBASE_APP_ID || "1:681745157668:web:f69b5ba2ab1355f71ad2b1",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-4G98V5Y8K9",
 };
 
 // Инициализация Firebase приложения

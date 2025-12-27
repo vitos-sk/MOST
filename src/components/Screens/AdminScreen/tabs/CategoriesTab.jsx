@@ -14,7 +14,6 @@ export function CategoriesTab({
   onInputChange,
   onSubmit,
   onDelete,
-  onInitialize,
 }) {
   return (
     <Fragment>
@@ -28,12 +27,6 @@ export function CategoriesTab({
         {showForm ? "Скрыть форму" : "Новая категория"}
       </Button>
 
-      {categories.length === 0 && (
-        <InitButton onClick={onInitialize} disabled={loading}>
-          Инициализировать категории
-        </InitButton>
-      )}
-
       {showForm && (
         <CategoryForm
           formData={formData}
@@ -45,7 +38,7 @@ export function CategoriesTab({
 
       <ItemsList>
         {categories.length === 0 ? (
-          <EmptyState>Категорий нет. Инициализируйте или добавьте первую!</EmptyState>
+          <EmptyState>Категорий нет. Добавьте первую!</EmptyState>
         ) : (
           categories.map((c) => (
             <CategoryCard key={c.id} category={c} onDelete={onDelete} loading={loading} />

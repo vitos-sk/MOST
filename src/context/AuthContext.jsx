@@ -9,7 +9,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { getUser, initTelegramApp } from "../services/telegramService";
-import { addUser, getUser as getUserFromDB } from "../API";
+import { usersService } from "../services/api";
 
 /**
  * Контекст аутентификации
@@ -69,11 +69,11 @@ export const AuthProvider = ({ children }) => {
         // 4. Синхронизация с Firebase (только для реальных пользователей, не mock)
         if (!telegramUser.isMock) {
           try {
-            const existingUser = await getUserFromDB(telegramUser.id);
+            const existingUser = await usersService.getById(telegramUser.id);
 
             if (!existingUser) {
               // Новый пользователь - добавляем в БД
-              await addUser({
+              await usersService.create({
                 telegramId: telegramUser.id,
                 firstName: telegramUser.firstName,
                 lastName: telegramUser.lastName,

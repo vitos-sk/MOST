@@ -1,5 +1,4 @@
 import styled from "styled-components";
-import { getCategoryName } from "../../../../API";
 import { Button, CodeHighlight } from "../../../UI-components";
 import { theme, cardGlass } from "../../../../theme/theme";
 
@@ -16,10 +15,13 @@ export function QuestionCard({ question, categories, onDelete, loading }) {
     votesOptionC,
   } = question;
 
+  // Get category name from categories array
+  const categoryName = categories.find((c) => c.id === category)?.name || category;
+
   return (
     <ItemCard>
       <ItemHeader>
-        <Badge>{getCategoryName(category, categories)}</Badge>
+        <Badge>{categoryName}</Badge>
       </ItemHeader>
 
       <CodeBlock>

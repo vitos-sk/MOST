@@ -1,34 +1,17 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { getCategories } from "../../../API";
+import { useCategories } from "../../../hooks";
 import { theme, cardGlass } from "../../../theme/theme";
 import { CategoryIcon } from "../../UI-components/CategoryIcon/CategoryIcon";
 import { Header } from "../../UI-components/Header/Header";
+import { routeHelpers } from "../../../config/routes";
 
 export function CategoriesScreen() {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { categories, loading } = useCategories();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    loadCategories();
-  }, []);
-
-  const loadCategories = async () => {
-    setLoading(true);
-    try {
-      const cats = await getCategories();
-      setCategories(cats);
-    } catch (error) {
-      // Error handling
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleCategorySelect = (categoryId) => {
-    navigate(`/questions/${categoryId}`);
+    navigate(routeHelpers.questions(categoryId));
   };
 
   if (loading) {
