@@ -23,9 +23,13 @@ const Container = styled.div`
   margin-bottom: ${theme.spacing.sm};
   background: ${theme.colors.bg.secondary};
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: auto;
   flex-shrink: 1;
-  min-height: 0;
+  min-height: 300px;
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
 `;
 
 const CodeLabel = styled.div`

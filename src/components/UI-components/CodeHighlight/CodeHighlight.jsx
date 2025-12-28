@@ -13,7 +13,7 @@ export function CodeHighlight({ code, language = "javascript" }) {
           margin: 0,
           padding: 0,
           background: "transparent",
-          fontSize: theme.typography.sizes.xs,
+          fontSize: theme.typography.sizes.sm,
           fontFamily: '"SF Mono", "Monaco", "Consolas", "Courier New", monospace',
           lineHeight: theme.typography.lineHeights.relaxed,
         }}
@@ -40,9 +40,8 @@ const CodeWrapper = styled.div`
     background: ${theme.colors.bg.primary} !important;
     border-radius: 0 !important;
     overflow-x: auto !important;
-    max-height: 200px;
     overflow-y: auto;
-    font-size: ${theme.typography.sizes.xs} !important;
+    font-size: ${theme.typography.sizes.sm} !important;
   }
 
   code {
