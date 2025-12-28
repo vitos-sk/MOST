@@ -18,7 +18,7 @@ export function CategoriesScreen() {
     return (
       <Container>
         <LoadingWrapper>
-          <LoadingTitle>MOST</LoadingTitle>
+          <LoadingTitle>JS Reality Test</LoadingTitle>
           <LoadingText>Загрузка категорий...</LoadingText>
           <LoadingSpinner />
         </LoadingWrapper>
