@@ -18,7 +18,6 @@ export function CategoriesScreen() {
     return (
       <Container>
         <LoadingWrapper>
-          <LoadingTitle>JS Reality Test</LoadingTitle>
           <LoadingText>Загрузка категорий...</LoadingText>
           <LoadingSpinner />
         </LoadingWrapper>
@@ -82,23 +81,6 @@ const LoadingWrapper = styled.div`
   justify-content: center;
   gap: ${theme.spacing.lg};
   padding: ${theme.spacing.xxl} ${theme.spacing.md};
-`;
-
-const LoadingTitle = styled.div`
-  font-size: 64px;
-  animation: pulse 2s ease-in-out infinite;
-
-  @keyframes pulse {
-    0%,
-    100% {
-      transform: scale(1);
-      opacity: 1;
-    }
-    50% {
-      transform: scale(1.1);
-      opacity: 0.8;
-    }
-  }
 `;
 
 const LoadingText = styled.div`
