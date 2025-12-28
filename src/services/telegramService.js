@@ -1,15 +1,24 @@
+import WebApp from "@twa-dev/sdk";
+
 /**
  * Инициализирует Telegram WebApp
  * Вызывает метод ready() для уведомления Telegram о готовности приложения
- * @returns {Object|null} Экземпляр Telegram.WebApp или null, если недоступен
+ * @returns {Object|null} Экземпляр WebApp или null, если недоступен
  */
 export const initTelegramApp = () => {
-  if (typeof window !== "undefined" && window.Telegram?.WebApp) {
-    const tg = window.Telegram.WebApp;
-    tg.ready();
-    return tg;
+  try {
+    // Проверяем наличие initData - это основной признак того, что мы в Telegram
+    if (typeof window !== "undefined" && WebApp.initData) {
+      WebApp.ready();
+      // Настраиваем параметры интерфейса
+      WebApp.expand();
+      return WebApp;
+    }
+    return null;
+  } catch (error) {
+    console.warn("Telegram WebApp не доступен:", error);
+    return null;
   }
-  return null;
 };
 
 /**
@@ -18,13 +27,12 @@ export const initTelegramApp = () => {
  */
 export const getTelegramUser = () => {
   try {
-    if (typeof window === "undefined" || !window.Telegram?.WebApp) {
+    // Проверяем наличие initData - основной признак того, что мы в Telegram Mini App
+    if (typeof window === "undefined" || !WebApp.initData) {
       return null;
     }
 
-    const tg = window.Telegram.WebApp;
-    const initData = tg.initData;
-    const user = tg.initDataUnsafe?.user;
+    const user = WebApp.initDataUnsafe?.user;
 
     if (!user) {
       return null;
@@ -38,9 +46,10 @@ export const getTelegramUser = () => {
       languageCode: user.language_code,
       isPremium: user.is_premium || false,
       photoUrl: user.photo_url,
-      initData,
+      initData: WebApp.initData,
     };
   } catch (error) {
+    console.warn("Ошибка при получении данных пользователя Telegram:", error);
     return null;
   }
 };
@@ -59,7 +68,15 @@ export const getTelegramUserId = () => {
  * @returns {boolean} true, если Telegram WebApp доступен, иначе false
  */
 export const isTelegramAvailable = () => {
-  return typeof window !== "undefined" && !!window.Telegram?.WebApp;
+  try {
+    // Проверяем наличие window.Telegram.WebApp и initData
+    // Оба должны быть доступны для работы в Telegram Mini App
+    return (
+      typeof window !== "undefined" && !!window.Telegram?.WebApp && !!WebApp.initData
+    );
+  } catch (error) {
+    return false;
+  }
 };
 
 /**
@@ -93,20 +110,31 @@ export const getUser = () => {
     // Если Telegram доступен, пытаемся получить реального пользователя
     const telegramUser = getTelegramUser();
     if (telegramUser) {
+      console.log("✅ Получен реальный пользователь Telegram:", telegramUser.id);
       return telegramUser;
+    } else {
+      console.warn("⚠️ Telegram доступен, но данные пользователя не получены");
     }
+  } else {
+    console.warn("⚠️ Telegram WebApp недоступен, используется mock пользователь");
   }
 
   // Если Telegram недоступен или данные не получены - используем mock
-  return getMockUser();
+  const mockUser = getMockUser();
+  console.warn("⚠️ Используется mock пользователь:", mockUser.id);
+  return mockUser;
 };
 
 /**
  * Закрывает Telegram Mini App
  */
 export const closeTelegramApp = () => {
-  if (typeof window !== "undefined" && window.Telegram?.WebApp) {
-    window.Telegram.WebApp.close();
+  try {
+    if (typeof window !== "undefined" && WebApp.initData) {
+      WebApp.close();
+    }
+  } catch (error) {
+    console.warn("Не удалось закрыть приложение:", error);
   }
 };
 
@@ -115,9 +143,13 @@ export const closeTelegramApp = () => {
  * @param {string} message - Текст сообщения
  */
 export const showTelegramAlert = (message) => {
-  if (typeof window !== "undefined" && window.Telegram?.WebApp) {
-    window.Telegram.WebApp.showAlert(message);
-  } else {
+  try {
+    if (typeof window !== "undefined" && WebApp.initData) {
+      WebApp.showAlert(message);
+    } else {
+      alert(message);
+    }
+  } catch (error) {
     alert(message);
   }
 };
@@ -129,11 +161,15 @@ export const showTelegramAlert = (message) => {
  */
 export const showTelegramConfirm = (message) => {
   return new Promise((resolve) => {
-    if (typeof window !== "undefined" && window.Telegram?.WebApp) {
-      window.Telegram.WebApp.showConfirm(message, (confirmed) => {
-        resolve(confirmed);
-      });
-    } else {
+    try {
+      if (typeof window !== "undefined" && WebApp.initData) {
+        WebApp.showConfirm(message, (confirmed) => {
+          resolve(confirmed);
+        });
+      } else {
+        resolve(confirm(message));
+      }
+    } catch (error) {
       resolve(confirm(message));
     }
   });
