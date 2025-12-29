@@ -42,7 +42,7 @@ const BoxHeader = ({ className }) => {
             onMouseLeave={cancelLongPress}
             style={{ cursor: "pointer", userSelect: "none" }}
           >
-            JavaScript
+            JS-Developer
           </Title>
         </TitleWrapper>
 
