@@ -48,9 +48,9 @@ export function QuestionScreen() {
   // Reset state when questions change
   useEffect(() => {
     if (questions.length > 0) {
-          setCurrentQuestionIndex(0);
-          setSelectedOption(null);
-        }
+      setCurrentQuestionIndex(0);
+      setSelectedOption(null);
+    }
   }, [questions.length, categoryId]);
 
   const handleVote = async () => {
@@ -162,10 +162,6 @@ export function QuestionScreen() {
   return (
     <Container>
       <QuestionCard>
-        <QuestionCounter>
-          Вопрос {currentQuestionIndex + 1} из {totalQuestions}
-        </QuestionCounter>
-
         <QuestionCodeBlock code={currentQuestion.code} />
 
         <AnswerList>
@@ -364,21 +360,6 @@ export const QuestionCard = styled.div`
     overflow-y: auto;
     border-radius: 0;
   }
-`;
-
-const QuestionCounter = styled.div`
-  text-align: center;
-  color: ${theme.colors.text.tertiary};
-  font-size: ${theme.typography.sizes.xs};
-  margin-bottom: ${theme.spacing.sm};
-  font-weight: ${theme.typography.weights.medium};
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: ${theme.spacing.xs};
-  background: ${theme.colors.bg.secondary};
-  border-radius: 0;
-  display: block;
-  width: 100%;
 `;
 
 export const AnswerList = styled.div`
