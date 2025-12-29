@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
 import { useAuth } from "../../../context/AuthContext";
 import { useQuestion, useQuestionsByCategory, useVotesByQuestion } from "../../../hooks";
@@ -11,9 +11,11 @@ import { ResultOption, ResultStatus, CodeBlock } from "./components";
 export function ResultScreen() {
   const { questionId, categoryId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [nextQuestion, setNextQuestion] = useState(null);
   const [userChoice, setUserChoice] = useState(null);
+  const isRestartMode = location.state?.isRestartMode || false;
 
   // Hooks for data fetching
   const {
@@ -50,10 +52,15 @@ export function ResultScreen() {
   const handleNextQuestion = () => {
     if (nextQuestion && categoryId) {
       navigate(routeHelpers.questions(categoryId), {
-        state: { startFromQuestionId: nextQuestion.id },
+        state: {
+          startFromQuestionId: nextQuestion.id,
+          isRestartMode: isRestartMode,
+        },
       });
     } else if (categoryId) {
-      navigate(routeHelpers.questions(categoryId));
+      navigate(routeHelpers.questions(categoryId), {
+        state: { isRestartMode: isRestartMode },
+      });
     } else {
       navigate(ROUTES.HOME);
     }

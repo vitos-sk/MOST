@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import { useModal } from "../../../context/ModalContext";
 import {
@@ -16,11 +16,14 @@ import { AnswerOption, QuestionCodeBlock } from "./components";
 export function QuestionScreen() {
   const { categoryId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { showError } = useModal();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
-  const [isRestartMode, setIsRestartMode] = useState(false);
+  const [isRestartMode, setIsRestartMode] = useState(
+    location.state?.isRestartMode || false
+  );
 
   // Hooks for data fetching
   const {
@@ -45,13 +48,31 @@ export function QuestionScreen() {
   const error = isRestartMode ? allQuestionsError : unansweredError;
   const isEmptyCategory = allCategoryQuestions.length === 0;
 
-  // Reset state when questions change
+  // Handle navigation state (startFromQuestionId and isRestartMode)
+  useEffect(() => {
+    const navIsRestartMode = location.state?.isRestartMode;
+    if (navIsRestartMode !== undefined && navIsRestartMode !== isRestartMode) {
+      setIsRestartMode(navIsRestartMode);
+    }
+  }, [location.state?.isRestartMode, isRestartMode]);
+
+  // Set question index based on startFromQuestionId or reset
   useEffect(() => {
     if (questions.length > 0) {
-      setCurrentQuestionIndex(0);
+      const startFromQuestionId = location.state?.startFromQuestionId;
+      if (startFromQuestionId) {
+        const targetIndex = questions.findIndex((q) => q.id === startFromQuestionId);
+        if (targetIndex !== -1) {
+          setCurrentQuestionIndex(targetIndex);
+        } else {
+          setCurrentQuestionIndex(0);
+        }
+      } else {
+        setCurrentQuestionIndex(0);
+      }
       setSelectedOption(null);
     }
-  }, [questions.length, categoryId]);
+  }, [questions, categoryId, isRestartMode, location.state?.startFromQuestionId]);
 
   const handleVote = async () => {
     if (!selectedOption || !user?.id) {
@@ -63,7 +84,9 @@ export function QuestionScreen() {
       const currentQuestion = questions[currentQuestionIndex];
       const result = await submitVote(user.id, currentQuestion.id, selectedOption);
       if (result?.success) {
-        navigate(routeHelpers.results(currentQuestion.id, categoryId));
+        navigate(routeHelpers.results(currentQuestion.id, categoryId), {
+          state: { isRestartMode },
+        });
       }
     } catch (err) {
       showError("Ошибка при голосовании");
@@ -81,8 +104,18 @@ export function QuestionScreen() {
 
   const handleRestart = async () => {
     if (!categoryId) return;
+    // Reset state first
+    setCurrentQuestionIndex(0);
+    setSelectedOption(null);
+    // Switch to restart mode
     setIsRestartMode(true);
+    // Wait for questions to be fetched
     await refetchAllQuestions();
+    // Clear location state to avoid conflicts
+    navigate(routeHelpers.questions(categoryId), {
+      state: { isRestartMode: true },
+      replace: true,
+    });
   };
 
   if (loading) {
