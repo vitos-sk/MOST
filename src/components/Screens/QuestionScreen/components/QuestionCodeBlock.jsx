@@ -23,13 +23,14 @@ const Container = styled.div`
   margin-bottom: ${theme.spacing.sm};
   background: ${theme.colors.bg.secondary};
   position: relative;
-  overflow-y: auto;
-  overflow-x: auto;
-  flex-shrink: 1;
-  min-height: 300px;
-  max-height: 60vh;
   display: flex;
   flex-direction: column;
+  max-height: 310px;
+  overflow: hidden;
+
+  @media (max-width: ${theme.breakpoints.sm}) {
+    max-height: 390px;
+  }
 `;
 
 const CodeLabel = styled.div`
@@ -42,4 +43,5 @@ const CodeLabel = styled.div`
   gap: ${theme.spacing.xs};
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  flex-shrink: 0;
 `;

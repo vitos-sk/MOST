@@ -33,6 +33,10 @@ export function CodeHighlight({ code, language = "javascript" }) {
 
 const CodeWrapper = styled.div`
   position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: auto;
 
   pre {
     margin: 0 !important;
@@ -40,8 +44,10 @@ const CodeWrapper = styled.div`
     background: ${theme.colors.bg.primary} !important;
     border-radius: 0 !important;
     overflow-x: auto !important;
-    overflow-y: auto;
+    overflow-y: visible !important;
     font-size: ${theme.typography.sizes.sm} !important;
+    height: auto !important;
+    max-height: none !important;
   }
 
   code {
