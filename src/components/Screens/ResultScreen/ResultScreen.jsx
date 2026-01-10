@@ -157,12 +157,18 @@ const Container = styled.div`
   max-width: 100%;
   margin: 0 auto;
   min-height: 100vh;
-  height: 100vh;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   background: ${theme.colors.bg.primary};
+  padding-bottom: 100px;
+  -webkit-overflow-scrolling: touch;
+
+  @media (max-width: ${theme.breakpoints.sm}) {
+    padding-bottom: 120px;
+  }
 `;
 
 export const ResultBox = styled.div`
@@ -173,10 +179,11 @@ export const ResultBox = styled.div`
   transition: all ${theme.transition.base};
   width: 100%;
   max-width: 700px;
-  margin: 0 auto;
+  margin: ${theme.spacing.sm} auto;
   background: ${theme.colors.bg.card};
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
 
   @keyframes slideUp {
     from {
@@ -187,6 +194,11 @@ export const ResultBox = styled.div`
       opacity: 1;
       transform: translateY(0);
     }
+  }
+
+  @media (max-width: ${theme.breakpoints.sm}) {
+    margin: ${theme.spacing.xs} auto;
+    padding: ${theme.spacing.sm};
   }
 `;
 
@@ -205,6 +217,8 @@ const ButtonGroup = styled.div`
   flex-wrap: wrap;
   justify-content: center;
   margin-top: ${theme.spacing.md};
+  flex-shrink: 0;
+  padding-bottom: ${theme.spacing.xs};
 `;
 
 const LoadingText = styled.div`
